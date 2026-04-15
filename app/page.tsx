@@ -27,16 +27,16 @@ async function getStats() {
       FROM aportes_campania a JOIN proveedores p ON a.cuit_donante = p.cuit AND p.cantidad_contratos > 0
     `);
     const { rows: top5 } = await pool.query(`
-      SELECT cuit, razon_social, total_adjudicado, cantidad_contratos, jurisdicciones_distintas
+      SELECT cuit, razon_social, total_adjudicado_ajustado as total_adjudicado, cantidad_contratos, jurisdicciones_distintas
       FROM proveedores WHERE cantidad_contratos > 0 AND ${EMPRESAS.cuit} ORDER BY total_adjudicado_ajustado DESC LIMIT 5
     `);
     const { rows: top5donantes } = await pool.query(`
       SELECT a.cuit_donante, MAX(a.nombre_donante) as nombre,
         array_agg(DISTINCT a.partido_politico) as partidos,
-        SUM(a.monto_aporte) as aportado, p.total_adjudicado as adjudicado
+        SUM(a.monto_aporte) as aportado, p.total_adjudicado_ajustado as adjudicado
       FROM aportes_campania a JOIN proveedores p ON a.cuit_donante = p.cuit AND p.cantidad_contratos > 0
       WHERE ${EMPRESAS.donante}
-      GROUP BY a.cuit_donante, p.total_adjudicado ORDER BY p.total_adjudicado DESC LIMIT 5
+      GROUP BY a.cuit_donante, p.total_adjudicado_ajustado ORDER BY p.total_adjudicado_ajustado DESC LIMIT 5
     `);
     const { rows: directa } = await pool.query(`
       SELECT tipo_procedimiento, COUNT(*) as n FROM adjudicaciones_historicas
@@ -176,7 +176,7 @@ export default async function HomePage() {
       <section className="border-t border-border pt-8">
         <div className="font-data text-[11px] uppercase tracking-[0.2em] text-mint mb-2">Contrataciones 2015–2026</div>
         <h3 className="text-2xl font-bold text-white mb-1">¿Quién cobra?</h3>
-        <p className="text-[11px] text-text-secondary mb-2">(montos en pesos nominales)</p>
+        <p className="text-[11px] text-text-secondary mb-2">(montos ajustados por inflación a Feb 2026)</p>
         <p className="text-text-secondary mb-4">
           {stats.adjudicaciones.toLocaleString()} contratos adjudicados a {stats.proveedores_unicos.toLocaleString()} proveedores.
           El {pctDirecta}% fue por contratación directa (sin competencia abierta).
@@ -204,7 +204,7 @@ export default async function HomePage() {
       <section className="border-t border-border pt-8">
         <div className="font-data text-[11px] uppercase tracking-[0.2em] text-mint mb-2">Aportes de campaña × Contrataciones</div>
         <h3 className="text-2xl font-bold text-white mb-1">¿Quién dona y quién cobra?</h3>
-        <p className="text-[11px] text-text-secondary mb-2">(montos en pesos nominales)</p>
+        <p className="text-[11px] text-text-secondary mb-2">(donaciones en pesos nominales · contratos ajustados por inflación)</p>
         <p className="text-text-secondary mb-4">
           De {stats.donantes_unicos.toLocaleString()} donantes de campaña registrados en la CNE,{" "}
           <span className="text-white font-medium">{stats.coincidencias}</span>{" "}
