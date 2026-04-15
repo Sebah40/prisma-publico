@@ -15,10 +15,20 @@ interface Props {
 
 export default async function FichaCUITPage({ params }: Props) {
   const { cuit } = await params;
-  const [ficha, vinculacion] = await Promise.all([
-    getFichaIdentidad(cuit),
-    getVinculacionPolitica(cuit),
-  ]);
+  console.log("[identidades] Loading CUIT:", cuit);
+
+  let ficha, vinculacion;
+  try {
+    console.log("[identidades] Calling getFichaIdentidad...");
+    const fichaP = getFichaIdentidad(cuit);
+    console.log("[identidades] Calling getVinculacionPolitica...");
+    const vincP = getVinculacionPolitica(cuit);
+    [ficha, vinculacion] = await Promise.all([fichaP, vincP]);
+    console.log("[identidades] ficha:", ficha ? "OK" : "null", "vinculacion:", vinculacion ? "OK" : "null");
+  } catch (err) {
+    console.error("[identidades] CRASH loading data:", err);
+    throw err;
+  }
   if (!ficha) notFound();
 
   // --- Auto-computed values ---

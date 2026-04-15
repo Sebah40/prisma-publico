@@ -67,12 +67,14 @@ export async function getVinculacionPolitica(
   cuit: string
 ): Promise<VinculacionPolitica | null> {
   const pool = getPool();
+  console.log("[getVinculacionPolitica] Querying 3 tables for", cuit);
 
   const [aportesRes, contratosRes, provRes] = await Promise.all([
     pool.query(`SELECT * FROM aportes_campania WHERE cuit_donante = $1 ORDER BY eleccion_anio ASC`, [cuit]),
     pool.query(`SELECT fecha_adjudicacion, saf_desc, monto, moneda, ejercicio FROM adjudicaciones_historicas WHERE cuit_proveedor = $1 ORDER BY fecha_adjudicacion ASC`, [cuit]),
     pool.query(`SELECT razon_social, total_adjudicado FROM proveedores WHERE cuit = $1 LIMIT 1`, [cuit]),
   ]);
+  console.log("[getVinculacionPolitica] aportes:", aportesRes.rows.length, "contratos:", contratosRes.rows.length);
 
   const aportesTyped = aportesRes.rows as AporteCampania[];
   const contratosTyped = contratosRes.rows as { fecha_adjudicacion: string | null; saf_desc: string; monto: number; moneda: string; ejercicio: number }[];
@@ -81,6 +83,7 @@ export async function getVinculacionPolitica(
   if (aportesTyped.length === 0 && contratosTyped.length === 0) return null;
 
   // Build timeline
+  console.log("[getVinculacionPolitica] Building timeline, calling adjustForInflation...");
   const timeline: TimelineEvent[] = [];
 
   for (const a of aportesTyped) {

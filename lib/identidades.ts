@@ -122,19 +122,25 @@ export async function getFichaIdentidad(
   if (/^(20|23|24|27)-/.test(cuit)) return null;
 
   const pool = getPool();
+  console.log("[getFichaIdentidad] Querying proveedores for", cuit);
 
   const { rows: provRows } = await pool.query(
     `SELECT * FROM proveedores WHERE cuit = $1 LIMIT 1`, [cuit]
   );
+  console.log("[getFichaIdentidad] provRows:", provRows.length);
   if (!provRows.length) return null;
   const p = provRows[0] as Record<string, unknown>;
 
+  console.log("[getFichaIdentidad] Querying adjudicaciones...");
   const { rows: adjRows } = await pool.query(
     `SELECT * FROM adjudicaciones_historicas WHERE cuit_proveedor = $1 ORDER BY fecha_adjudicacion DESC`, [cuit]
   );
+  console.log("[getFichaIdentidad] adjRows:", adjRows.length);
   const historial = adjRows as AdjudicacionHistorica[];
 
+  console.log("[getFichaIdentidad] Getting orbita principal...");
   const orbita = await getOrbitaPrincipal(cuit);
+  console.log("[getFichaIdentidad] orbita:", orbita ? "OK" : "null");
 
   return {
     cuit: String(p.cuit),

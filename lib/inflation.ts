@@ -21,20 +21,34 @@ let ipcCache: Map<string, number> | null = null;
 async function loadIPC(): Promise<Map<string, number>> {
   if (ipcCache) return ipcCache;
 
-  const res = await fetch(API_URL);
-  const json = await res.json();
-  const data: [string, number | null][] = json.data || [];
+  try {
+    const res = await fetch(API_URL);
+    const text = await res.text();
 
-  const map = new Map<string, number>();
-  for (const [date, value] of data) {
-    if (value != null) {
-      // date is "YYYY-MM-DD", we key by "YYYY-MM"
-      map.set(date.substring(0, 7), value);
+    if (!res.ok || !text.startsWith("{")) {
+      console.error("[IPC] API returned non-JSON response:", res.status, text.substring(0, 200));
+      ipcCache = new Map();
+      return ipcCache;
     }
-  }
 
-  ipcCache = map;
-  return map;
+    const json = JSON.parse(text);
+    const data: [string, number | null][] = json.data || [];
+
+    const map = new Map<string, number>();
+    for (const [date, value] of data) {
+      if (value != null) {
+        map.set(date.substring(0, 7), value);
+      }
+    }
+
+    console.log(`[IPC] Loaded ${map.size} months of data`);
+    ipcCache = map;
+    return map;
+  } catch (err) {
+    console.error("[IPC] Failed to load IPC data:", err);
+    ipcCache = new Map();
+    return ipcCache;
+  }
 }
 
 /**
