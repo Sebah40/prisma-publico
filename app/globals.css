@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* The Verge-inspired: dark editorial canvas */
+  --color-canvas: #131313;
+  --color-surface: #2d2d2d;
+  --color-surface-hover: #383838;
+  --color-border: #3a3a3a;
+  --color-mint: #3cffd0;
+  --color-violet: #5200ff;
+  --color-mint-dark: #309875;
+  --color-link: #3860be;
+  --color-red: #ff4d4d;
+
+  /* Text */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #949494;
+  --color-text-muted: #666666;
+  --color-text-inverted: #131313;
+
+  /* Semantic aliases for existing components */
+  --color-negro: #131313;
+  --color-grafito: #2d2d2d;
+  --color-gris-800: #383838;
+  --color-gris-600: #666666;
+  --color-gris-400: #949494;
+  --color-gris-200: #ffffff;
+  --color-cobalto: #3cffd0;
+  --color-cobalto-claro: #3cffd0;
+  --color-alerta: #ff4d4d;
+  --color-ok: #3cffd0;
+  --color-background: #131313;
+  --color-foreground: #ffffff;
+  --color-muted: #666666;
+
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--color-border);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* No rounded corners — editorial sharp */
+*,
+*::before,
+*::after {
+  border-radius: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #131313; }
+::-webkit-scrollbar-thumb { background: #3a3a3a; }
+
+/* Selection — mint */
+::selection { background: #3cffd0; color: #131313; }
+
+/* Tables — mono */
+table {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
+/* Focus */
+:focus-visible { outline: 1px solid #3cffd0; outline-offset: -1px; }
+
+/* Links — mint */
+a { color: #3cffd0; text-decoration: none; }
+a:hover { color: #3860be; text-decoration: underline; }
+
+/* Data utility */
+.font-data {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }

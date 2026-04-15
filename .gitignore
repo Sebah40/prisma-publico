@@ -30,8 +30,25 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+
+# scraped data (large files, regenerable)
+/data/
+
+# design references (downloaded, not source)
+/design-references/
+/theverge/
+/stripe/
+/linear.app/
+/supabase/
+/posthog/
+/sentry/
+/vercel/
+/notion/
+
+# database password file
+**/db-password
 
 # vercel
 .vercel
