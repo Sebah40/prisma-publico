@@ -154,9 +154,9 @@ export function TablaProgramas({
       </div>
 
       {/* Filters bar */}
-      <div className="flex items-center gap-3 border-b border-border px-4 py-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 border-b border-border px-4 py-2">
         <select
-          className="h-7 border border-border bg-grafito px-2 text-xs text-gris-200 focus:border-cobalto focus:outline-none"
+          className="h-7 w-full sm:w-auto border border-border bg-grafito px-2 text-xs text-gris-200 focus:border-cobalto focus:outline-none"
           value={jurFilter ?? ""}
           onChange={(e) =>
             updateURL({ jurisdiccion: e.target.value || null })
@@ -171,15 +171,15 @@ export function TablaProgramas({
         </select>
         <Input
           placeholder="Buscar programa..."
-          className="h-7 max-w-xs"
+          className="h-7 w-full sm:max-w-xs"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
             setPage(1);
           }}
         />
-        <div className="ml-auto flex gap-1">
-          <span className="font-data text-[10px] text-muted self-center mr-2">
+        <div className="flex items-center gap-1 sm:ml-auto">
+          <span className="font-data text-[10px] text-muted mr-2">
             {sorted.length} resultados
           </span>
           <Button variant="ghost" onClick={() => handleExport("csv")}>
@@ -196,16 +196,16 @@ export function TablaProgramas({
         <table className="w-full border-collapse text-left">
           <thead className="border-b border-border bg-grafito text-[10px] uppercase tracking-wider text-muted">
             <tr>
-              <th className="px-2 py-1.5 font-medium w-10">JUR<InfoTip text="Jurisdicción: ministerio u organismo responsable" /></th>
-              <th className="px-2 py-1.5 font-medium w-10">PRG<InfoTip text="Programa presupuestario dentro de la jurisdicción" /></th>
+              <th className="hidden sm:table-cell px-2 py-1.5 font-medium w-10">JUR<InfoTip text="Jurisdicción: ministerio u organismo responsable" /></th>
+              <th className="hidden sm:table-cell px-2 py-1.5 font-medium w-10">PRG<InfoTip text="Programa presupuestario dentro de la jurisdicción" /></th>
               <th className="px-2 py-1.5 font-medium">Programa</th>
               <SortHeader k="credito_vigente" label="Vigente" className="text-right" tip="Presupuesto ajustado actual (puede diferir del original por decretos)" />
-              <SortHeader k="credito_devengado" label="Devengado" className="text-right" tip="Plata que el Estado reconoce que debe: el proveedor entregó y facturó, falta pagar" />
+              <SortHeader k="credito_devengado" label="Dev." className="text-right hidden md:table-cell" tip="Plata que el Estado reconoce que debe: el proveedor entregó y facturó, falta pagar" />
               <SortHeader k="ejecucion_pct" label="Ejec %" className="text-right" tip="Pagado / Vigente — qué porcentaje de la plata asignada se gastó efectivamente" />
-              <SortHeader k="gap_gestion" label="Gap Gestión" className="text-right" tip="Devengado − Pagado: plata facturada que el Estado aún no pagó (deuda flotante)" />
-              <SortHeader k="aumento_discrecional_pct" label="Aum. Disc." className="text-right" tip="Vigente vs Presupuestado original: cuánto aumentó o bajó el presupuesto por decreto" />
-              <SortHeader k="credito_pagado" label="Pagado" className="text-right" tip="Dinero que efectivamente salió de las arcas del Estado" />
-              <th className="px-2 py-1.5 font-medium">Patrones</th>
+              <SortHeader k="gap_gestion" label="Gap" className="text-right hidden lg:table-cell" tip="Devengado − Pagado: plata facturada que el Estado aún no pagó (deuda flotante)" />
+              <SortHeader k="aumento_discrecional_pct" label="Disc." className="text-right hidden lg:table-cell" tip="Vigente vs Presupuestado original: cuánto aumentó o bajó el presupuesto por decreto" />
+              <SortHeader k="credito_pagado" label="Pagado" className="text-right hidden md:table-cell" tip="Dinero que efectivamente salió de las arcas del Estado" />
+              <th className="px-2 py-1.5 font-medium hidden sm:table-cell">Patrones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -213,27 +213,27 @@ export function TablaProgramas({
               const slug = `${p.jurisdiccion_id}-${p.entidad_id ?? 0}-${p.programa_id}`;
               return (
                 <tr key={p.id} className="hover:bg-grafito/50">
-                  <td className="px-2 py-1 font-data text-[11px] text-muted">
+                  <td className="hidden sm:table-cell px-2 py-1 font-data text-[11px] text-muted">
                     {p.jurisdiccion_id}
                   </td>
-                  <td className="px-2 py-1 font-data text-[11px] text-muted">
+                  <td className="hidden sm:table-cell px-2 py-1 font-data text-[11px] text-muted">
                     {p.programa_id}
                   </td>
-                  <td className="px-2 py-1 text-xs">
+                  <td className="px-2 py-1 text-xs max-w-[140px] sm:max-w-none">
                     <Link
                       href={`/presupuesto/${slug}`}
-                      className="text-gris-200 hover:text-cobalto-claro"
+                      className="text-gris-200 hover:text-cobalto-claro line-clamp-2 sm:line-clamp-none"
                     >
                       {p.programa_desc}
                     </Link>
                   </td>
-                  <td className="px-2 py-1 text-right font-data text-[11px] text-gris-200">
+                  <td className="px-2 py-1 text-right font-data text-[11px] text-gris-200 whitespace-nowrap">
                     {formatARSCompact(p.credito_vigente)}
                   </td>
-                  <td className="px-2 py-1 text-right font-data text-[11px] text-gris-400">
+                  <td className="hidden md:table-cell px-2 py-1 text-right font-data text-[11px] text-gris-400 whitespace-nowrap">
                     {formatARSCompact(p.credito_devengado)}
                   </td>
-                  <td className="px-2 py-1 text-right font-data text-[11px]">
+                  <td className="px-2 py-1 text-right font-data text-[11px] whitespace-nowrap">
                     <span
                       className={
                         p.ejecucion_pct < 10
@@ -246,12 +246,12 @@ export function TablaProgramas({
                       {p.ejecucion_pct.toFixed(1)}%
                     </span>
                   </td>
-                  <td className="px-2 py-1 text-right font-data text-[11px]">
+                  <td className="hidden lg:table-cell px-2 py-1 text-right font-data text-[11px] whitespace-nowrap">
                     <span className={p.gap_gestion > 0 ? "text-alerta" : "text-muted"}>
                       {p.gap_gestion > 0 ? formatARSCompact(p.gap_gestion) : "—"}
                     </span>
                   </td>
-                  <td className="px-2 py-1 text-right font-data text-[11px]">
+                  <td className="hidden lg:table-cell px-2 py-1 text-right font-data text-[11px] whitespace-nowrap">
                     <span
                       className={
                         p.aumento_discrecional_pct > 15
@@ -265,10 +265,10 @@ export function TablaProgramas({
                       {p.aumento_discrecional_pct.toFixed(0)}%
                     </span>
                   </td>
-                  <td className="px-2 py-1 text-right font-data text-[11px] text-gris-400">
+                  <td className="hidden md:table-cell px-2 py-1 text-right font-data text-[11px] text-gris-400 whitespace-nowrap">
                     {formatARSCompact(p.credito_pagado)}
                   </td>
-                  <td className="px-2 py-1">
+                  <td className="hidden sm:table-cell px-2 py-1">
                     <div className="flex gap-1 flex-wrap">
                       {getOutlierTags(p).map((tag) => (
                         <span

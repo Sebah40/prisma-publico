@@ -65,12 +65,14 @@ export async function getContratosPorProcedimiento(
 ): Promise<ContratoDetalle[]> {
   const pool = getPool();
 
+    // Strip accents on both sides for matching (ILIKE is not accent-insensitive)
     const { rows } = await pool.query(`
       SELECT numero_procedimiento, saf_desc, tipo_procedimiento,
         ejercicio, fecha_adjudicacion, cuit_proveedor, proveedor_desc,
         monto, monto_ajustado
       FROM adjudicaciones_historicas
-      WHERE tipo_procedimiento ILIKE $1
+      WHERE translate(lower(tipo_procedimiento), 'áéíóúüñ', 'aeiouun')
+        ILIKE translate(lower($1), 'áéíóúüñ', 'aeiouun')
       ORDER BY monto_ajustado DESC
       LIMIT $2
     `, [`%${tipo}%`, limit]);
@@ -86,7 +88,7 @@ export async function getCruceProveedorOrganismo(
     let where = `WHERE ${EMPRESAS.proveedor}`;
     const params: (string | number)[] = [];
     if (cuit) { params.push(cuit); where += ` AND cuit_proveedor = $${params.length}`; }
-    if (organismo) { params.push(`%${organismo}%`); where += ` AND saf_desc ILIKE $${params.length}`; }
+    if (organismo) { params.push(`%${organismo}%`); where += ` AND translate(lower(saf_desc), 'áéíóúüñ', 'aeiouun') ILIKE translate(lower($${params.length}), 'áéíóúüñ', 'aeiouun')`; }
     params.push(limit);
 
     const { rows } = await pool.query(`

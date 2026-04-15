@@ -130,11 +130,11 @@ export default async function HomePage() {
               const pct = totalVigente > 0 ? (j.credito_vigente / totalVigente) * 100 : 0;
               return (
                 <div key={j.jurisdiccion_id}>
-                  <div className="flex justify-between text-sm">
-                    <Link href={`/presupuesto?jurisdiccion=${j.jurisdiccion_id}`} className="text-white no-underline hover:text-mint">
+                  <div className="flex justify-between gap-2 text-sm">
+                    <Link href={`/presupuesto?jurisdiccion=${j.jurisdiccion_id}`} className="text-white no-underline hover:text-mint min-w-0">
                       {j.jurisdiccion_desc}
                     </Link>
-                    <span className="font-data text-text-secondary">{formatARSCompact(j.credito_vigente)}</span>
+                    <span className="font-data text-text-secondary shrink-0">{formatARSCompact(j.credito_vigente)}</span>
                   </div>
                   <div className="mt-1 h-2 w-full bg-surface">
                     <div className="h-full bg-mint/30" style={{ width: `${pct}%` }}>
@@ -182,10 +182,10 @@ export default async function HomePage() {
           El {pctDirecta}% fue por contratación directa (sin competencia abierta).
         </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-0 border border-border">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-0 border border-border">
           {stats.top5.map((p, i) => (
             <Link key={p.cuit} href={`/identidades/${p.cuit}`}
-              className="block p-4 border-r border-border no-underline hover:bg-surface hover:no-underline transition-colors last:border-r-0">
+              className="block p-4 border-b sm:border-r border-border no-underline hover:bg-surface hover:no-underline transition-colors last:border-b-0 md:last:border-r-0">
               <div className="font-data text-[10px] text-text-muted">#{i + 1}</div>
               <div className="text-sm font-medium text-white mt-1 leading-tight">{p.nombre}</div>
               <div className="font-data text-lg text-mint mt-2">{formatPesos(p.adjudicado)}</div>
@@ -217,18 +217,18 @@ export default async function HomePage() {
               const ratio = d.aportado > 0 ? (d.adjudicado / d.aportado).toFixed(0) : "—";
               return (
                 <Link key={d.cuit} href={`/identidades/${d.cuit}`}
-                  className="flex items-center gap-4 border border-border p-3 no-underline hover:bg-surface hover:no-underline transition-colors">
-                  <div className="flex-1 min-w-0">
+                  className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 border border-border p-3 no-underline hover:bg-surface hover:no-underline transition-colors">
+                  <div className="flex-1 min-w-0 w-full sm:w-auto">
                     <div className="text-sm text-white font-medium">{d.nombre}</div>
                     <div className="font-data text-[10px] text-text-secondary mt-0.5">
                       Donó a {d.partidos.slice(0, 2).join(", ").substring(0, 60)}
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
+                  <div className="text-left sm:text-right shrink-0">
                     <div className="font-data text-[10px] text-text-secondary">Donó {formatPesos(d.aportado)}</div>
                     <div className="font-data text-[10px] text-text-secondary">Cobró {formatPesos(d.adjudicado)}</div>
                   </div>
-                  <div className="font-data text-lg text-mint shrink-0 w-16 text-right">{ratio}x</div>
+                  <div className="font-data text-lg text-mint shrink-0 w-16 text-right ml-auto">{ratio}x</div>
                 </Link>
               );
             })}

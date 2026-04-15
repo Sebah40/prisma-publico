@@ -63,7 +63,7 @@ export default async function PresupuestoPage() {
       </header>
 
       {/* Alert counts */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-0 border-b border-border">
+      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-0 border-b border-border">
         {(["anomalias", "plata-quieta", "decreto", "deuda", "caja-muerta", "recorte"] as const).map((presetId) => {
           const preset = OUTLIER_PRESETS.find(p => p.id === presetId);
           const value = counts[presetId];
@@ -148,12 +148,12 @@ function AlertStat({
   tip?: string;
 }) {
   return (
-    <div className="border-r border-border px-3 py-2">
-      <div className="text-[9px] font-medium uppercase tracking-wider text-muted">
+    <div className="border-r border-border px-2 sm:px-3 py-2">
+      <div className="text-[8px] sm:text-[9px] font-medium uppercase tracking-wider text-muted truncate">
         {label}
         {tip && <InfoTip text={tip} />}
       </div>
-      <div className={`font-data text-lg ${value > 0 ? (accent ?? "text-gris-200") : "text-muted"}`}>
+      <div className={`font-data text-base sm:text-lg ${value > 0 ? (accent ?? "text-gris-200") : "text-muted"}`}>
         {value}
       </div>
     </div>
