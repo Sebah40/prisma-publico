@@ -15,7 +15,7 @@ import {
 } from "@/lib/insights";
 import { InsightsSection } from "@/components/insights/insights-section";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 async function getStats() {
   const pool = getPool();

@@ -7,7 +7,7 @@ import { ExportButtons } from "@/components/presupuesto/export-buttons";
 import { InfoTip } from "@/components/ui/tooltip";
 import { TimelineVisual } from "@/components/ui/timeline-visual";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ cuit: string }>;

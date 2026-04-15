@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getContratosPorProcedimiento } from "@/lib/explorar";
 import { formatPesos } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 interface Props { searchParams: Promise<{ tipo?: string }> }
 

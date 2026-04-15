@@ -3,7 +3,7 @@ import { formatPesos } from "@/lib/format";
 import { InfoTip } from "@/components/ui/tooltip";
 import { NexoDashboard } from "@/components/nexo/dashboard";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function NexoPage() {
   const [points, kpis] = await Promise.all([

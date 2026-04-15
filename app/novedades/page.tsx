@@ -9,7 +9,7 @@ const TIPO_STYLES: Record<AlertaTipo, { bg: string; text: string; border: string
   NORMAL: { bg: "bg-muted/20", text: "text-muted", border: "", label: "NORMAL" },
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 1800;
 
 export default async function NovedadesPage() {
   const hoy = new Date().toISOString().slice(0, 10);

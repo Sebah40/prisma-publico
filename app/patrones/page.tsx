@@ -17,7 +17,7 @@ import {
   DualBarDirecta,
 } from "@/components/patrones/charts";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const TAG_STYLE: Record<string, string> = {
   Recurrente: "bg-cobalto/20 text-cobalto-claro",

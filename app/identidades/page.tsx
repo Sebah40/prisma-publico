@@ -3,7 +3,7 @@ import { getProveedores } from "@/lib/identidades";
 import { formatPesos } from "@/lib/format";
 import { InfoTip } from "@/components/ui/tooltip";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 interface Props {
   searchParams: Promise<{ q?: string; page?: string }>;

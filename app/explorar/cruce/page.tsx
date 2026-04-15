@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getCruceProveedorOrganismo, getCoocurrenciaDetalle } from "@/lib/explorar";
 import { formatPesos } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 interface Props { searchParams: Promise<{ cuit?: string; organismo?: string; cuit2?: string }> }
 

@@ -12,7 +12,7 @@ import { TopOutliers } from "@/components/presupuesto/top-outliers";
 import { formatARSCompact } from "@/lib/format";
 import { InfoTip } from "@/components/ui/tooltip";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function PresupuestoPage() {
   const snapshot = await getUltimoSnapshot();
