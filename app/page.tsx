@@ -103,27 +103,27 @@ export default async function HomePage() {
 
       {/* === HERO === */}
       <section>
-        <h2 className="text-2xl md:text-4xl font-black leading-tight text-white">
+        <h2 className="text-xl sm:text-2xl md:text-4xl font-black leading-tight text-white">
           El Estado argentino tiene{" "}
           <span className="text-mint">{formatARSCompact(totalVigente)}</span>{" "}
           asignados en 2026.
         </h2>
-        <p className="mt-3 text-lg text-text-secondary max-w-3xl leading-relaxed">
+        <p className="mt-3 text-base sm:text-lg text-text-secondary max-w-3xl leading-relaxed">
           Al mes 4 de 12, lleva gastados {formatARSCompact(totalPagado)} ({ejecGlobal.toFixed(0)}%).
           Al ritmo actual, cerraría el año en ~{(ejecGlobal * 3).toFixed(0)}%.
           {sinEjecucion > 0 && <> <span className="whitespace-nowrap">{sinEjecucion} programas</span> todavía no registran ningún pago.</>}
           {" "}Esta página cruza presupuesto, contrataciones y aportes de campaña para que veas a dónde va la plata.
         </p>
-        <Link href="/presupuesto" className="inline-block mt-4 border border-mint px-4 py-2 font-data text-[11px] uppercase tracking-widest text-mint no-underline hover:bg-mint hover:text-canvas hover:no-underline transition-colors">
+        <Link href="/presupuesto" className="inline-block mt-4 border border-mint px-4 py-3 sm:py-2 font-data text-xs uppercase tracking-widest text-mint no-underline hover:bg-mint hover:text-canvas hover:no-underline transition-colors">
           Ver el detalle del gasto →
         </Link>
       </section>
 
       {/* === ¿A DÓNDE VA LA PLATA? === */}
       <section className="border-t border-border pt-8">
-        <div className="font-data text-[11px] uppercase tracking-[0.2em] text-mint mb-2">Presupuesto 2026</div>
+        <div className="font-data text-xs uppercase tracking-[0.2em] text-mint mb-2">Presupuesto 2026</div>
         <h3 className="text-2xl font-bold text-white mb-1">¿A dónde va la plata?</h3>
-        <p className="text-[11px] text-text-secondary mb-4">(montos en millones de pesos)</p>
+        <p className="text-xs text-text-secondary mb-4">(montos en millones de pesos)</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-3">
             {jurisdicciones.slice(0, 8).map((j) => {
@@ -141,7 +141,7 @@ export default async function HomePage() {
                       <div className="h-full bg-mint" style={{ width: `${j.ejecucion_pct}%` }} />
                     </div>
                   </div>
-                  <div className="flex justify-between mt-0.5 font-data text-[10px] text-text-muted">
+                  <div className="flex justify-between mt-0.5 font-data text-xs sm:text-[10px] text-text-muted">
                     <span>{pct.toFixed(1)}% del total</span>
                     <span>{j.ejecucion_pct.toFixed(0)}% ejecutado</span>
                   </div>
@@ -150,7 +150,7 @@ export default async function HomePage() {
             })}
           </div>
           <div className="border border-border p-5">
-            <div className="font-data text-[11px] uppercase tracking-widest text-text-muted mb-3">En resumen</div>
+            <div className="font-data text-xs uppercase tracking-widest text-text-muted mb-3">En resumen</div>
             <div className="space-y-3 text-sm text-text-secondary leading-relaxed">
               <p>
                 <span className="text-white font-medium">{jurisdicciones[0]?.jurisdiccion_desc}</span> concentra el{" "}
@@ -174,9 +174,9 @@ export default async function HomePage() {
 
       {/* === ¿QUIÉN COBRA? === */}
       <section className="border-t border-border pt-8">
-        <div className="font-data text-[11px] uppercase tracking-[0.2em] text-mint mb-2">Contrataciones 2015–2026</div>
+        <div className="font-data text-xs uppercase tracking-[0.2em] text-mint mb-2">Contrataciones 2015–2026</div>
         <h3 className="text-2xl font-bold text-white mb-1">¿Quién cobra?</h3>
-        <p className="text-[11px] text-text-secondary mb-2">(montos ajustados por inflación a Feb 2026)</p>
+        <p className="text-xs text-text-secondary mb-2">(montos ajustados por inflación a Feb 2026)</p>
         <p className="text-text-secondary mb-4">
           {stats.adjudicaciones.toLocaleString()} contratos adjudicados a {stats.proveedores_unicos.toLocaleString()} proveedores.
           El {pctDirecta}% fue por contratación directa (sin competencia abierta).
@@ -195,16 +195,16 @@ export default async function HomePage() {
             </Link>
           ))}
         </div>
-        <Link href="/patrones" className="inline-block mt-4 font-data text-[11px] uppercase tracking-widest text-mint">
+        <Link href="/patrones" className="inline-block mt-4 py-2 font-data text-xs uppercase tracking-widest text-mint">
           Ver todos los patrones de contratación →
         </Link>
       </section>
 
       {/* === ¿QUIÉN DONA Y QUIÉN COBRA? === */}
       <section className="border-t border-border pt-8">
-        <div className="font-data text-[11px] uppercase tracking-[0.2em] text-mint mb-2">Aportes de campaña × Contrataciones</div>
+        <div className="font-data text-xs uppercase tracking-[0.2em] text-mint mb-2">Aportes de campaña × Contrataciones</div>
         <h3 className="text-2xl font-bold text-white mb-1">¿Quién dona y quién cobra?</h3>
-        <p className="text-[11px] text-text-secondary mb-2">(donaciones en pesos nominales · contratos ajustados por inflación)</p>
+        <p className="text-xs text-text-secondary mb-2">(donaciones en pesos nominales · contratos ajustados por inflación)</p>
         <p className="text-text-secondary mb-4">
           De {stats.donantes_unicos.toLocaleString()} donantes de campaña registrados en la CNE,{" "}
           <span className="text-white font-medium">{stats.coincidencias}</span>{" "}
@@ -236,14 +236,14 @@ export default async function HomePage() {
         ) : (
           <p className="text-text-muted">Sin datos de aportes cargados.</p>
         )}
-        <Link href="/nexo" className="inline-block mt-4 font-data text-[11px] uppercase tracking-widest text-mint">
+        <Link href="/nexo" className="inline-block mt-4 py-2 font-data text-xs uppercase tracking-widest text-mint">
           Explorar el cruce completo →
         </Link>
       </section>
 
       {/* === DATOS INTERESANTES === */}
       <section className="border-t border-border pt-8">
-        <div className="font-data text-[11px] uppercase tracking-[0.2em] text-mint mb-2">Cruces de datos</div>
+        <div className="font-data text-xs uppercase tracking-[0.2em] text-mint mb-2">Cruces de datos</div>
         <h3 className="text-2xl font-bold text-white mb-2">Datos interesantes</h3>
         <p className="text-text-secondary mb-6">
           Patrones que emergen al cruzar las bases de datos.
@@ -261,7 +261,7 @@ export default async function HomePage() {
 
       {/* === FUENTES === */}
       <section className="border-t border-border pt-8">
-        <div className="font-data text-[11px] uppercase tracking-[0.2em] text-text-muted mb-3">Fuentes de datos</div>
+        <div className="font-data text-xs uppercase tracking-[0.2em] text-text-muted mb-3">Fuentes de datos</div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { name: "Presupuesto Abierto", desc: "API SITIF — presupuesto nacional en tiempo real", rows: "359 programas" },
@@ -270,7 +270,7 @@ export default async function HomePage() {
           ].map((s) => (
             <div key={s.name} className="border border-border p-4">
               <div className="text-sm font-medium text-white">{s.name}</div>
-              <div className="text-[11px] text-text-secondary mt-1">{s.desc}</div>
+              <div className="text-xs text-text-secondary mt-1">{s.desc}</div>
               <div className="font-data text-[10px] text-mint mt-2">{s.rows}</div>
             </div>
           ))}

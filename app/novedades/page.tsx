@@ -73,11 +73,11 @@ export default async function NovedadesPage() {
           {items.map((nov) => {
             const style = TIPO_STYLES[nov.tipo as AlertaTipo];
             return (
-              <div key={nov.id} className="flex gap-4 px-6 py-3 hover:bg-grafito/30">
+              <div key={nov.id} className="flex flex-col sm:flex-row gap-2 sm:gap-4 px-4 sm:px-6 py-3 hover:bg-grafito/30">
                 {/* Badge tipo */}
                 <div className="shrink-0 pt-0.5">
                   <span
-                    className={`inline-block px-2 py-0.5 font-data text-[10px] font-medium ${style.bg} ${style.text}`}
+                    className={`inline-block px-2 py-0.5 font-data text-xs font-medium ${style.bg} ${style.text}`}
                   >
                     {style.label}
                   </span>
@@ -88,10 +88,10 @@ export default async function NovedadesPage() {
                   <div className="text-xs font-medium text-gris-200">
                     {nov.titulo}
                   </div>
-                  <div className="mt-0.5 text-[11px] text-gris-400">
+                  <div className="mt-0.5 text-sm sm:text-[11px] text-gris-400">
                     {nov.detalle}
                   </div>
-                  <div className="mt-1 flex gap-4 font-data text-[10px] text-muted">
+                  <div className="mt-1 flex gap-4 font-data text-xs text-muted">
                     <span>
                       JUR {nov.jurisdiccion_id} · {nov.jurisdiccion_desc}
                     </span>
@@ -100,7 +100,7 @@ export default async function NovedadesPage() {
                 </div>
 
                 {/* Métricas */}
-                <div className="shrink-0 text-right font-data text-[11px]">
+                <div className="shrink-0 text-right font-data text-sm sm:text-[11px]">
                   <div className="text-gris-200">
                     {nov.vigente_hoy != null
                       ? formatARSCompact(nov.vigente_hoy)
@@ -145,7 +145,7 @@ function MiniStat({
 }) {
   return (
     <div className="border-r border-border px-4 py-2">
-      <div className="text-[10px] font-medium uppercase tracking-wider text-muted">
+      <div className="text-xs sm:text-[10px] font-medium uppercase tracking-wider text-muted">
         {label}
       </div>
       <div className={`font-data text-lg ${accent ?? "text-gris-200"}`}>

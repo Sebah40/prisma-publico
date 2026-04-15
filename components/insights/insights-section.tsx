@@ -30,9 +30,9 @@ interface Props {
 function ChartCard({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
     <div className="border border-border">
-      <div className="px-5 pt-5 pb-3">
-        <h4 className="text-sm font-medium text-white">{title}</h4>
-        <p className="text-[11px] text-text-secondary mt-0.5">{subtitle}</p>
+      <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3">
+        <h4 className="text-base sm:text-sm font-medium text-white">{title}</h4>
+        <p className="text-xs sm:text-[11px] text-text-secondary mt-0.5">{subtitle}</p>
       </div>
       {children}
     </div>

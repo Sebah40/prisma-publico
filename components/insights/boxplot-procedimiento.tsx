@@ -202,7 +202,7 @@ export function BoxPlotProcedimiento({ data }: { data: BoxPlotRow[] }) {
         }}
       />
       <div ref={tooltipRef} className="pointer-events-none absolute z-[9999] hidden border border-gray-700 bg-[#1a1a1a] text-white px-2 py-1" />
-      <div className="flex gap-4 px-2 pt-1 text-[9px] text-text-secondary">
+      <div className="flex gap-4 px-2 pt-1 text-xs sm:text-[9px] text-text-secondary">
         <span><span className="mr-1 inline-block h-2 w-2" style={{ background: C.mint }} />Mediana</span>
         <span>Caja = rango intercuartil (25%-75%) · Línea = mediana · Bigotes = 1.5× el rango</span>
         <span className="ml-auto">Escala logarítmica</span>

@@ -67,18 +67,18 @@ export default async function IdentidadesPage({ searchParams }: Props) {
       {/* Table */}
       <div className="w-full overflow-x-auto">
         <table className="w-full border-collapse text-left">
-          <thead className="border-b border-border bg-grafito text-[10px] uppercase tracking-wider text-muted">
+          <thead className="border-b border-border bg-grafito text-xs sm:text-[10px] uppercase tracking-wider text-muted">
             <tr>
               <th className="px-3 py-1.5 font-medium">CUIT</th>
               <th className="px-3 py-1.5 font-medium">Razón Social</th>
-              <th className="px-3 py-1.5 font-medium">Provincia</th>
+              <th className="px-3 py-1.5 font-medium hidden sm:table-cell">Provincia</th>
               <th className="px-3 py-1.5 font-medium text-right">
                 Total Adjudicado<InfoTip text="Suma de todos los montos ganados en licitaciones 2015-2020 (pesos nominales históricos)" />
               </th>
               <th className="px-3 py-1.5 font-medium text-right">
                 Contratos<InfoTip text="Cantidad de adjudicaciones ganadas" />
               </th>
-              <th className="px-3 py-1.5 font-medium text-right">
+              <th className="px-3 py-1.5 font-medium text-right hidden sm:table-cell">
                 Años<InfoTip text="Cantidad de años distintos en los que ganó al menos un contrato" />
               </th>
               <th className="px-3 py-1.5 font-medium text-right">
@@ -90,10 +90,10 @@ export default async function IdentidadesPage({ searchParams }: Props) {
           <tbody className="divide-y divide-border">
             {proveedores.map((p) => (
               <tr key={p.cuit} className="hover:bg-grafito/50">
-                <td className="px-3 py-1.5 font-data text-[11px] text-cobalto-claro">
+                <td className="px-3 py-1.5 font-data text-sm sm:text-xs text-cobalto-claro">
                   <Link href={`/identidades/${p.cuit}`}>{p.cuit}</Link>
                 </td>
-                <td className="px-3 py-1.5 text-xs text-gris-200">
+                <td className="px-3 py-1.5 text-sm sm:text-xs text-gris-200">
                   <Link
                     href={`/identidades/${p.cuit}`}
                     className="text-gris-200 hover:text-cobalto-claro"
@@ -101,19 +101,19 @@ export default async function IdentidadesPage({ searchParams }: Props) {
                     {p.razon_social}
                   </Link>
                 </td>
-                <td className="px-3 py-1.5 text-[11px] text-gris-400">
+                <td className="px-3 py-1.5 text-sm sm:text-xs text-gris-400 hidden sm:table-cell">
                   {p.provincia ?? "—"}
                 </td>
-                <td className="px-3 py-1.5 text-right font-data text-[11px] text-gris-200">
+                <td className="px-3 py-1.5 text-right font-data text-sm sm:text-xs text-gris-200">
                   {formatPesos(p.total_adjudicado)}
                 </td>
-                <td className="px-3 py-1.5 text-right font-data text-[11px] text-gris-400">
+                <td className="px-3 py-1.5 text-right font-data text-sm sm:text-xs text-gris-400">
                   {p.cantidad_contratos}
                 </td>
-                <td className="px-3 py-1.5 text-right font-data text-[11px] text-gris-400">
+                <td className="px-3 py-1.5 text-right font-data text-sm sm:text-xs text-gris-400 hidden sm:table-cell">
                   {p.anios_activo}
                 </td>
-                <td className="px-3 py-1.5 text-right font-data text-[11px] text-gris-400">
+                <td className="px-3 py-1.5 text-right font-data text-sm sm:text-xs text-gris-400">
                   {p.jurisdicciones_distintas}
                 </td>
                 <td className="px-3 py-1.5">

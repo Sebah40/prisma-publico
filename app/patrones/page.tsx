@@ -52,7 +52,7 @@ export default async function PatronesPage() {
       </header>
 
       {/* Summary stats — each clickable */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-0 border-b border-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-0 border-b border-border">
         <Stat label="RECURRENTES" value={recurrentes.length} tip="CUITs que ganaron contratos en 3 o más años distintos" href="#recurrentes" />
         <Stat label="CONCENTRADOS" value={concentrados.length} tip="CUITs que operan en 1 sola jurisdicción con 5+ contratos" href="#concentrados" />
         <Stat label="DIVERSIFICADOS" value={diversificados.length} tip="CUITs que operan en 5 o más jurisdicciones distintas" href="#diversificados" />
@@ -131,7 +131,7 @@ export default async function PatronesPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
           {/* Bar chart */}
-          <div className="border-r border-border">
+          <div className="border-b md:border-b-0 md:border-r border-border">
             <div className="divide-y divide-border">
               {topDirectas.map((j) => (
                 <div key={j.saf_id} className="flex items-center gap-3 px-4 py-1.5">
@@ -157,27 +157,27 @@ export default async function PatronesPage() {
           {/* Summary table */}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
-              <thead className="border-b border-border bg-grafito text-[9px] uppercase tracking-wider text-muted">
+              <thead className="border-b border-border bg-grafito text-xs sm:text-[10px] uppercase tracking-wider text-muted">
                 <tr>
                   <th className="px-3 py-1.5 font-medium">Organismo (SAF)</th>
                   <th className="px-3 py-1.5 font-medium text-right">Contratos</th>
-                  <th className="px-3 py-1.5 font-medium text-right">Directas</th>
+                  <th className="px-3 py-1.5 font-medium text-right hidden sm:table-cell">Directas</th>
                   <th className="px-3 py-1.5 font-medium text-right">% Dir.</th>
-                  <th className="px-3 py-1.5 font-medium text-right">Proveedores</th>
+                  <th className="px-3 py-1.5 font-medium text-right hidden sm:table-cell">Proveedores</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {topDirectas.map((j) => (
                   <tr key={j.saf_id} className="hover:bg-grafito/50">
-                    <td className="px-3 py-1 text-[10px] text-gris-200 max-w-48 truncate">{j.saf_desc}</td>
-                    <td className="px-3 py-1 text-right font-data text-[10px] text-gris-400">{j.total_contratos}</td>
-                    <td className="px-3 py-1 text-right font-data text-[10px] text-gris-400">{j.total_directas}</td>
-                    <td className="px-3 py-1 text-right font-data text-[10px]">
+                    <td className="px-3 py-1 text-xs text-gris-200 max-w-none sm:max-w-48 sm:truncate">{j.saf_desc}</td>
+                    <td className="px-3 py-1 text-right font-data text-xs text-gris-400">{j.total_contratos}</td>
+                    <td className="px-3 py-1 text-right font-data text-xs text-gris-400 hidden sm:table-cell">{j.total_directas}</td>
+                    <td className="px-3 py-1 text-right font-data text-xs">
                       <span className={j.pct_directas > 80 ? "text-alerta" : "text-gris-200"}>
                         {j.pct_directas.toFixed(0)}%
                       </span>
                     </td>
-                    <td className="px-3 py-1 text-right font-data text-[10px] text-muted">{j.proveedores_unicos}</td>
+                    <td className="px-3 py-1 text-right font-data text-xs text-muted hidden sm:table-cell">{j.proveedores_unicos}</td>
                   </tr>
                 ))}
               </tbody>
@@ -207,7 +207,7 @@ export default async function PatronesPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gris-200 truncate">{p.razon_social}</span>
                     {p.indicadores.map(tag => (
-                      <span key={tag} className={`shrink-0 px-1 py-0.5 text-[8px] font-medium ${TAG_STYLE[tag] ?? "bg-muted/20 text-muted"}`}>
+                      <span key={tag} className={`shrink-0 px-1 py-0.5 text-[10px] sm:text-[8px] font-medium ${TAG_STYLE[tag] ?? "bg-muted/20 text-muted"}`}>
                         {tag}
                       </span>
                     ))}
@@ -266,7 +266,7 @@ export default async function PatronesPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
           {/* Concentration chart: top 10 vs rest */}
-          <div className="border-r border-border p-4">
+          <div className="border-b md:border-b-0 md:border-r border-border p-4">
             <div className="text-[10px] text-muted mb-2">Top 10 CUITs vs el resto</div>
             {(() => {
               const top10monto = top.slice(0, 10).reduce((s, p) => s + p.total_adjudicado, 0);
@@ -339,46 +339,46 @@ function CUITTable({
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-left">
-        <thead className="border-b border-border bg-grafito text-[9px] uppercase tracking-wider text-muted">
+        <thead className="border-b border-border bg-grafito text-xs sm:text-[10px] uppercase tracking-wider text-muted">
           <tr>
-            <th className="px-3 py-1.5 font-medium">CUIT</th>
+            <th className="px-3 py-1.5 font-medium hidden sm:table-cell">CUIT</th>
             <th className="px-3 py-1.5 font-medium">Razón Social</th>
             <th className="px-3 py-1.5 font-medium text-right">Adjudicado</th>
             <th className="px-3 py-1.5 font-medium text-right">Contratos</th>
-            <th className="px-3 py-1.5 font-medium text-right">Años</th>
-            <th className="px-3 py-1.5 font-medium text-right">JUR</th>
-            <th className="px-3 py-1.5 font-medium">Indicadores</th>
+            <th className="px-3 py-1.5 font-medium text-right hidden sm:table-cell">Años</th>
+            <th className="px-3 py-1.5 font-medium text-right hidden sm:table-cell">JUR</th>
+            <th className="px-3 py-1.5 font-medium hidden sm:table-cell">Indicadores</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
           {data.map((p) => (
             <tr key={p.cuit} className="hover:bg-grafito/50">
-              <td className="px-3 py-1 font-data text-[10px]">
+              <td className="px-3 py-1 font-data text-xs hidden sm:table-cell">
                 <Link href={`/identidades/${p.cuit}`} className="text-cobalto-claro">
                   {p.cuit}
                 </Link>
               </td>
-              <td className="px-3 py-1 text-[11px] text-gris-200 max-w-56 truncate">
+              <td className="px-3 py-1 text-xs text-gris-200 max-w-none sm:max-w-56 sm:truncate">
                 <Link href={`/identidades/${p.cuit}`} className="text-gris-200 hover:text-cobalto-claro">
                   {p.razon_social}
                 </Link>
               </td>
-              <td className="px-3 py-1 text-right font-data text-[10px] text-gris-200">
+              <td className="px-3 py-1 text-right font-data text-xs text-gris-200">
                 {formatPesos(p.total_adjudicado)}
               </td>
-              <td className="px-3 py-1 text-right font-data text-[10px] text-gris-400">
+              <td className="px-3 py-1 text-right font-data text-xs text-gris-400">
                 {p.cantidad_contratos}
               </td>
-              <td className="px-3 py-1 text-right font-data text-[10px] text-gris-400">
+              <td className="px-3 py-1 text-right font-data text-xs text-gris-400 hidden sm:table-cell">
                 {p.anios_activo}
               </td>
-              <td className="px-3 py-1 text-right font-data text-[10px] text-gris-400">
+              <td className="px-3 py-1 text-right font-data text-xs text-gris-400 hidden sm:table-cell">
                 {p.jurisdicciones_distintas}
               </td>
-              <td className="px-3 py-1">
+              <td className="px-3 py-1 hidden sm:table-cell">
                 <div className="flex gap-1">
                   {p.indicadores.map(tag => (
-                    <span key={tag} className={`px-1 py-0.5 text-[8px] font-medium ${TAG_STYLE[tag] ?? "bg-muted/20 text-muted"}`}>
+                    <span key={tag} className={`px-1 py-0.5 text-[10px] sm:text-[8px] font-medium ${TAG_STYLE[tag] ?? "bg-muted/20 text-muted"}`}>
                       {tag}
                     </span>
                   ))}
@@ -395,12 +395,12 @@ function CUITTable({
 function Stat({ label, value, subtitle, tip, href }: { label: string; value: string | number; subtitle?: string; tip?: string; href?: string }) {
   const content = (
     <div className={`border-r border-border px-3 py-2 ${href ? "cursor-pointer hover:bg-grafito/50 transition-colors" : ""}`}>
-      <div className="text-[9px] font-medium uppercase tracking-wider text-muted">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted">
         {label}
         {tip && <InfoTip text={tip} />}
       </div>
       <div className="font-data text-lg text-gris-200">{value}</div>
-      {subtitle && <div className="text-[9px] text-muted truncate">{subtitle}</div>}
+      {subtitle && <div className="text-[10px] text-muted truncate">{subtitle}</div>}
     </div>
   );
   if (href) {

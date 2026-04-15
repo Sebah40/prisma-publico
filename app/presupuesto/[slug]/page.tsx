@@ -97,7 +97,7 @@ export default async function DossierPage({ params }: Props) {
       </header>
 
       {/* Key metrics */}
-      <div className="grid grid-cols-6 gap-0 border-b border-border">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-0 border-b border-border">
         <Metric label="PRESUPUESTADO" value={formatARSCompact(ultimo.credito_presupuestado)} />
         <Metric label="VIGENTE" value={formatARSCompact(ultimo.credito_vigente)} />
         <Metric label="DEVENGADO" value={formatARSCompact(ultimo.credito_devengado)} />
@@ -114,7 +114,7 @@ export default async function DossierPage({ params }: Props) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
         {/* Left: Timeline + details */}
         <div className="border-r border-border">
           {/* Snapshot Timeline */}
@@ -286,8 +286,8 @@ function Metric({
   accent?: string;
 }) {
   return (
-    <div className="border-r border-border px-3 py-2">
-      <div className="text-[9px] font-medium uppercase tracking-wider text-muted">
+    <div className="border-r border-border px-3 py-2 sm:px-4">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted">
         {label}
       </div>
       <div className={`font-data text-sm ${accent ?? "text-gris-200"}`}>

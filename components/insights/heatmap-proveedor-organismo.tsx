@@ -155,7 +155,7 @@ export function HeatmapProveedorOrganismo({ data }: { data: HeatmapRow[] }) {
         }}
       />
       <div ref={tooltipRef} className="pointer-events-none absolute z-[9999] hidden border border-gray-700 bg-[#1a1a1a] text-white px-2 py-1" />
-      <div className="flex gap-4 px-2 pt-1 text-[9px] text-text-secondary">
+      <div className="flex gap-4 px-2 pt-1 text-xs sm:text-[9px] text-text-secondary">
         <span>Intensidad = monto total (escala log)</span>
         <span className="ml-auto">Top 15 proveedores × Top 12 organismos</span>
       </div>

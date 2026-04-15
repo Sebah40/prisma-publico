@@ -148,7 +148,7 @@ export function TimelineAcumulacion({ data }: { data: TimelineAcumulacionRow[] }
 
   return (
     <div className="relative">
-      <canvas ref={canvasRef} className="h-72 w-full cursor-crosshair"
+      <canvas ref={canvasRef} className="h-[340px] sm:h-72 w-full cursor-crosshair"
         onMouseMove={(e) => {
           const rect = canvasRef.current?.getBoundingClientRect();
           const tip = tooltipRef.current;
@@ -188,7 +188,7 @@ export function TimelineAcumulacion({ data }: { data: TimelineAcumulacionRow[] }
         }}
       />
       <div ref={tooltipRef} className="pointer-events-none absolute z-[9999] hidden border border-gray-700 bg-[#1a1a1a] text-white px-2 py-1" />
-      <div className="flex gap-4 px-2 pt-1 text-[9px] text-text-secondary">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 px-2 pt-1 text-xs sm:text-[9px] text-text-secondary">
         <span>Cada linea = monto acumulado de un proveedor</span>
         <span><span className="mr-1 inline-block h-0.5 w-4 border-t border-dashed border-gray-500" />Promedio</span>
         <span className="ml-auto">Top 5 proveedores por monto total</span>

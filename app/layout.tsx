@@ -28,12 +28,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {" "}PÚBLICO
               </span>
             </Link>
-            <p className="mt-0.5 font-data text-[11px] uppercase tracking-[0.2em] text-text-secondary">
+            <p className="mt-0.5 font-data text-xs sm:text-[11px] uppercase tracking-[0.2em] text-text-secondary">
               Seguimiento del gasto público argentino
             </p>
           </div>
           {/* Nav */}
-          <nav className="mx-auto max-w-7xl px-4 sm:px-6 pb-3 flex flex-wrap gap-x-4 gap-y-1 sm:gap-x-6">
+          <nav className="mx-auto max-w-7xl px-4 sm:px-6 pb-3 flex flex-wrap gap-x-5 gap-y-2 sm:gap-x-6">
             {[
               { href: "/", label: "INICIO" },
               { href: "/presupuesto", label: "GASTO PÚBLICO" },
@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link
                 key={link.href}
                 href={link.href}
-                className="shrink-0 font-data text-[11px] uppercase tracking-[0.15em] text-text-secondary no-underline hover:text-mint hover:no-underline transition-colors"
+                className="shrink-0 font-data text-xs sm:text-[11px] uppercase tracking-[0.15em] text-text-secondary no-underline hover:text-mint hover:no-underline transition-colors py-2"
               >
                 {link.label}
               </Link>
@@ -57,17 +57,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <footer className="border-t border-border mt-16 py-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 space-y-2">
-            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0 text-[10px] text-text-secondary font-data uppercase tracking-wider">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0 text-xs sm:text-[10px] text-text-secondary font-data uppercase tracking-wider">
               <span>Fuentes oficiales · Datos públicos · Sin afiliación política</span>
               <span>IPC: INDEC (abr 2016–feb 2026)</span>
             </div>
-            <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-[10px] text-text-muted">
-              <a href="https://www.presupuestoabierto.gob.ar/api/" target="_blank" rel="noopener noreferrer" className="hover:text-mint">Presupuesto Abierto (Min. Economía)</a>
-              <a href="https://comprar.gob.ar" target="_blank" rel="noopener noreferrer" className="hover:text-mint">COMPR.AR (Jefatura de Gabinete)</a>
-              <a href="https://www.electoral.gob.ar/nuevo/paginas/cne/informes.php" target="_blank" rel="noopener noreferrer" className="hover:text-mint">CNE (Cámara Nacional Electoral)</a>
-              <a href="https://apis.datos.gob.ar/series/api/" target="_blank" rel="noopener noreferrer" className="hover:text-mint">IPC (INDEC)</a>
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs sm:text-[10px] text-text-muted">
+              <a href="https://www.presupuestoabierto.gob.ar/api/" target="_blank" rel="noopener noreferrer" className="hover:text-mint py-1">Presupuesto Abierto (Min. Economía)</a>
+              <a href="https://comprar.gob.ar" target="_blank" rel="noopener noreferrer" className="hover:text-mint py-1">COMPR.AR (Jefatura de Gabinete)</a>
+              <a href="https://www.electoral.gob.ar/nuevo/paginas/cne/informes.php" target="_blank" rel="noopener noreferrer" className="hover:text-mint py-1">CNE (Cámara Nacional Electoral)</a>
+              <a href="https://apis.datos.gob.ar/series/api/" target="_blank" rel="noopener noreferrer" className="hover:text-mint py-1">IPC (INDEC)</a>
             </div>
-            <div className="text-[9px] text-text-muted">
+            <div className="text-[10px] sm:text-[9px] text-text-muted">
               Los datos mostrados son de acceso público (Ley 27.275). La coincidencia entre datos no implica causalidad ni irregularidad.
             </div>
           </div>

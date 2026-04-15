@@ -133,7 +133,7 @@ export function RatioContratosDias({ data }: { data: RatioContratosDiasRow[] }) 
 
   return (
     <div className="relative">
-      <canvas ref={canvasRef} className="h-64 w-full cursor-crosshair"
+      <canvas ref={canvasRef} className="h-[320px] sm:h-64 w-full cursor-crosshair"
         onMouseMove={(e) => {
           const rect = canvasRef.current?.getBoundingClientRect();
           const tip = tooltipRef.current;
@@ -166,7 +166,7 @@ export function RatioContratosDias({ data }: { data: RatioContratosDiasRow[] }) 
         }}
       />
       <div ref={tooltipRef} className="pointer-events-none absolute z-[9999] hidden border border-gray-700 bg-[#1a1a1a] text-white px-2 py-1" />
-      <div className="flex gap-4 px-2 pt-1 text-[9px] text-text-secondary">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 px-2 pt-1 text-xs sm:text-[9px] text-text-secondary">
         <span><span className="mr-1 inline-block h-2 w-2" style={{ background: "#ff4d4d" }} />Más de 3 contratos por día en promedio</span>
         <span><span className="mr-1 inline-block h-2 w-2" style={{ background: "rgba(60, 255, 208, 0.5)" }} />Resto</span>
         <span className="ml-auto">Debajo de la diagonal = múltiples contratos el mismo día</span>

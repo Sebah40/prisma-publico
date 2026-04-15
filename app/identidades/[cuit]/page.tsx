@@ -127,7 +127,7 @@ export default async function FichaCUITPage({ params }: Props) {
       </header>
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-0 border-b border-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-0 border-b border-border">
         <Metric label="ADJUDICADO (NOMINAL)" value={formatPesos(ficha.total_adjudicado)} tip="Suma de todos los contratos en pesos de cada año" />
         <Metric label="ADJUDICADO (HOY)" value={formatPesos(totalAjustado)} tip="Suma ajustada por inflación a pesos de Feb 2026" />
         <Metric label="CONTRATOS" value={ficha.cantidad_contratos} />
@@ -137,7 +137,7 @@ export default async function FichaCUITPage({ params }: Props) {
 
       {/* Donation info if exists */}
       {vinculacion && vinculacion.aportes.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-0 border-b border-border bg-cobalto/5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-0 border-b border-border bg-cobalto/5">
           <Metric label="DONÓ A" value={vinculacion.partidos.join(", ")} />
           <Metric label="TOTAL DONADO" value={formatPesos(vinculacion.total_aportado)} tip="Total aportado a campañas (pesos nominales)" />
           <Metric label="SECUENCIA" value={primerAporteAnio && primerContratoAnio
@@ -216,7 +216,7 @@ export default async function FichaCUITPage({ params }: Props) {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
-              <thead className="border-b border-border bg-grafito text-[9px] uppercase tracking-wider text-muted">
+              <thead className="border-b border-border bg-grafito text-[10px] uppercase tracking-wider text-muted">
                 <tr>
                   <th className="px-3 py-1.5 font-medium">Fecha</th>
                   <th className="px-3 py-1.5 font-medium">Procedimiento</th>
@@ -229,22 +229,22 @@ export default async function FichaCUITPage({ params }: Props) {
               <tbody className="divide-y divide-border">
                 {ficha.historial.map((h) => (
                   <tr key={h.id} className="hover:bg-grafito/50">
-                    <td className="px-3 py-1 font-data text-[10px] text-muted whitespace-nowrap">
+                    <td className="px-3 py-1 font-data text-xs text-muted whitespace-nowrap">
                       {h.fecha_adjudicacion ?? "—"}
                     </td>
-                    <td className="px-3 py-1 font-data text-[11px] text-gris-200">
+                    <td className="px-3 py-1 font-data text-xs text-gris-200">
                       {h.numero_procedimiento}
                     </td>
-                    <td className="px-3 py-1 text-[11px] text-gris-400 max-w-48 truncate">
+                    <td className="px-3 py-1 text-xs text-gris-400 max-w-none sm:max-w-48 sm:truncate">
                       {(h.saf_desc || "").replace(/^\d+\s*-\s*/, "")}
                     </td>
-                    <td className="px-3 py-1 text-[10px] text-muted whitespace-nowrap">
+                    <td className="px-3 py-1 text-xs text-muted whitespace-nowrap">
                       {h.tipo_procedimiento}
                     </td>
-                    <td className="px-3 py-1 text-right font-data text-[11px] text-gris-200">
+                    <td className="px-3 py-1 text-right font-data text-xs text-gris-200">
                       {formatPesos(h.monto)}
                     </td>
-                    <td className="px-3 py-1 text-right font-data text-[11px] text-gris-200">
+                    <td className="px-3 py-1 text-right font-data text-xs text-gris-200">
                       {formatPesos(h.monto_ajustado || h.monto)}
                     </td>
                   </tr>
@@ -261,10 +261,10 @@ export default async function FichaCUITPage({ params }: Props) {
 function Metric({ label, value, tip }: { label: string; value: string | number; tip?: string }) {
   return (
     <div className="border-r border-border px-3 py-2">
-      <div className="text-[9px] font-medium uppercase tracking-wider text-muted">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted">
         {label}{tip && <InfoTip text={tip} />}
       </div>
-      <div className="font-data text-sm text-gris-200 truncate">{value}</div>
+      <div className="font-data text-sm text-gris-200">{value}</div>
     </div>
   );
 }
@@ -273,7 +273,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-2">
       <span className="text-muted shrink-0">{label}</span>
-      <span className="text-gris-200 text-right truncate">{value}</span>
+      <span className="text-gris-200 text-right break-words">{value}</span>
     </div>
   );
 }

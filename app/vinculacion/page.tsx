@@ -14,7 +14,7 @@ export default async function VinculacionPage() {
         <h1 className="text-sm font-medium text-gris-200">
           Financiamiento y Contratación
         </h1>
-        <p className="text-[10px] text-muted">
+        <p className="text-xs text-muted">
           CUITs que figuran como donantes de campaña (CNE) y como proveedores del Estado (COMPR.AR)
         </p>
       </header>
@@ -31,7 +31,7 @@ export default async function VinculacionPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-0 border-b border-border">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 border-b border-border">
             <Stat label="COINCIDENCIAS" value={coincidencias.length} tip="CUITs que aparecen tanto en donaciones de campaña como en adjudicaciones del Estado" />
             <Stat
               label="MAYOR RATIO ADJ/APORTE"
@@ -46,11 +46,11 @@ export default async function VinculacionPage() {
 
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
-              <thead className="border-b border-border bg-grafito text-[9px] uppercase tracking-wider text-muted">
+              <thead className="border-b border-border bg-grafito text-[10px] uppercase tracking-wider text-muted">
                 <tr>
                   <th className="px-3 py-1.5 font-medium">CUIT</th>
                   <th className="px-3 py-1.5 font-medium">Razón Social</th>
-                  <th className="px-3 py-1.5 font-medium">Partidos</th>
+                  <th className="hidden sm:table-cell px-3 py-1.5 font-medium">Partidos</th>
                   <th className="px-3 py-1.5 font-medium text-right">
                     Aportado
                     <InfoTip text="Total aportado a campañas electorales según registros CNE (pesos nominales)" />
@@ -63,47 +63,47 @@ export default async function VinculacionPage() {
                     Ratio
                     <InfoTip text="Adjudicado ÷ Aportado — cuántas veces más recibió del Estado vs lo que donó" />
                   </th>
-                  <th className="px-3 py-1.5 font-medium text-right">
+                  <th className="hidden sm:table-cell px-3 py-1.5 font-medium text-right">
                     1er Aporte
                   </th>
-                  <th className="px-3 py-1.5 font-medium text-right">
+                  <th className="hidden sm:table-cell px-3 py-1.5 font-medium text-right">
                     1er Contrato
                   </th>
-                  <th className="px-3 py-1.5 font-medium text-right">JUR</th>
+                  <th className="hidden sm:table-cell px-3 py-1.5 font-medium text-right">JUR</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {coincidencias.map((c) => (
                   <tr key={c.cuit} className="hover:bg-grafito/50">
-                    <td className="px-3 py-1 font-data text-[10px]">
+                    <td className="px-3 py-1 font-data text-xs">
                       <Link href={`/identidades/${c.cuit}`} className="text-cobalto">
                         {c.cuit}
                       </Link>
                     </td>
-                    <td className="px-3 py-1 text-[11px] text-gris-200 max-w-48 truncate">
+                    <td className="px-3 py-1 text-xs text-gris-200 max-w-none sm:max-w-48 sm:truncate">
                       <Link href={`/identidades/${c.cuit}`} className="text-gris-200 hover:text-cobalto">
                         {c.razon_social}
                       </Link>
                     </td>
-                    <td className="px-3 py-1 text-[10px] text-gris-400">
+                    <td className="hidden sm:table-cell px-3 py-1 text-xs text-gris-400">
                       {c.partidos.join(", ")}
                     </td>
-                    <td className="px-3 py-1 text-right font-data text-[10px] text-gris-400">
+                    <td className="px-3 py-1 text-right font-data text-xs text-gris-400">
                       {formatPesos(c.total_aportado)}
                     </td>
-                    <td className="px-3 py-1 text-right font-data text-[10px] text-gris-200">
+                    <td className="px-3 py-1 text-right font-data text-xs text-gris-200">
                       {formatPesos(c.total_adjudicado)}
                     </td>
-                    <td className="px-3 py-1 text-right font-data text-[10px] text-gris-200">
+                    <td className="px-3 py-1 text-right font-data text-xs text-gris-200">
                       {c.ratio > 0 ? `${c.ratio.toFixed(0)}x` : "—"}
                     </td>
-                    <td className="px-3 py-1 text-right font-data text-[10px] text-muted">
+                    <td className="hidden sm:table-cell px-3 py-1 text-right font-data text-xs text-muted">
                       {c.primer_aporte_anio || "—"}
                     </td>
-                    <td className="px-3 py-1 text-right font-data text-[10px] text-muted">
+                    <td className="hidden sm:table-cell px-3 py-1 text-right font-data text-xs text-muted">
                       {c.primer_contrato_anio || "—"}
                     </td>
-                    <td className="px-3 py-1 text-right font-data text-[10px] text-muted">
+                    <td className="hidden sm:table-cell px-3 py-1 text-right font-data text-xs text-muted">
                       {c.jurisdicciones}
                     </td>
                   </tr>
@@ -120,7 +120,7 @@ export default async function VinculacionPage() {
 function Stat({ label, value, tip }: { label: string; value: string | number; tip?: string }) {
   return (
     <div className="border-r border-border px-3 py-2">
-      <div className="text-[9px] font-medium uppercase tracking-wider text-muted">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-muted">
         {label}
         {tip && <InfoTip text={tip} />}
       </div>

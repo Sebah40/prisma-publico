@@ -160,7 +160,7 @@ export function AntesVsDespues({ data }: { data: AntesVsDespuesRow[] }) {
         }}
       />
       <div ref={tooltipRef} className="pointer-events-none absolute z-[9999] hidden border border-gray-700 bg-[#1a1a1a] text-white px-2 py-1" />
-      <div className="flex gap-4 px-2 pt-1 text-[9px] text-text-secondary">
+      <div className="flex gap-4 px-2 pt-1 text-xs sm:text-[9px] text-text-secondary">
         <span><span className="mr-1 inline-block h-2 w-3" style={{ background: C.gray }} />Antes de donar</span>
         <span><span className="mr-1 inline-block h-2 w-3" style={{ background: "rgba(60, 255, 208, 0.5)" }} />Despues de donar</span>
         <span><span className="mr-1 inline-block h-2 w-3" style={{ background: "rgba(255, 77, 77, 0.6)" }} />&gt;10x aumento</span>

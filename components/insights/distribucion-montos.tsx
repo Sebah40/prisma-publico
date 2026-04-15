@@ -135,7 +135,7 @@ export function DistribucionMontos({ data }: { data: DistribucionMontosRow[] }) 
 
   return (
     <div className="relative">
-      <canvas ref={canvasRef} className="h-64 w-full cursor-crosshair"
+      <canvas ref={canvasRef} className="h-[320px] sm:h-64 w-full cursor-crosshair"
         onMouseMove={(e) => {
           const rect = canvasRef.current?.getBoundingClientRect();
           const tip = tooltipRef.current;
@@ -169,7 +169,7 @@ export function DistribucionMontos({ data }: { data: DistribucionMontosRow[] }) 
         }}
       />
       <div ref={tooltipRef} className="pointer-events-none absolute z-[9999] hidden border border-gray-700 bg-[#1a1a1a] text-white px-2 py-1" />
-      <div className="flex gap-4 px-2 pt-1 text-[9px] text-text-secondary">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 px-2 pt-1 text-xs sm:text-[9px] text-text-secondary">
         <span><span className="mr-1 inline-block h-2 w-3" style={{ background: "rgba(60, 255, 208, 0.4)" }} />Mayoria</span>
         <span><span className="mr-1 inline-block h-2 w-3" style={{ background: "rgba(255, 77, 77, 0.6)" }} />Top 5% (outliers)</span>
         <span className="ml-auto">Escala logaritmica en X</span>

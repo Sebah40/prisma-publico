@@ -16,7 +16,7 @@ export default async function MesPage({ searchParams }: Props) {
   const directas = data.filter(d => d.tipo_procedimiento?.toLowerCase().includes("directa")).length;
 
   return (
-    <div className="px-6 py-8 max-w-7xl mx-auto">
+    <div className="px-4 sm:px-6 py-8 max-w-7xl mx-auto">
       <div className="text-[10px] text-text-secondary font-data uppercase tracking-widest mb-1">
         <Link href="/" className="text-mint">Inicio</Link> / Explorar / Contratos por mes
       </div>
@@ -29,11 +29,11 @@ export default async function MesPage({ searchParams }: Props) {
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left">
-          <thead className="border-b border-border text-[9px] uppercase tracking-wider text-text-secondary">
+          <thead className="border-b border-border text-[10px] uppercase tracking-wider text-text-secondary">
             <tr>
               <th className="px-3 py-2 font-medium">Fecha</th>
-              <th className="px-3 py-2 font-medium">Procedimiento</th>
-              <th className="px-3 py-2 font-medium">Tipo</th>
+              <th className="hidden sm:table-cell px-3 py-2 font-medium">Procedimiento</th>
+              <th className="hidden sm:table-cell px-3 py-2 font-medium">Tipo</th>
               <th className="px-3 py-2 font-medium">Organismo</th>
               <th className="px-3 py-2 font-medium">Proveedor</th>
               <th className="px-3 py-2 font-medium text-right">Monto (ajustado)</th>
@@ -42,18 +42,18 @@ export default async function MesPage({ searchParams }: Props) {
           <tbody className="divide-y divide-border">
             {data.map((c, i) => (
               <tr key={`${c.numero_procedimiento}-${i}`} className="hover:bg-surface transition-colors">
-                <td className="px-3 py-2 font-data text-[10px] text-text-secondary whitespace-nowrap">
+                <td className="px-3 py-2 font-data text-xs text-text-secondary whitespace-nowrap">
                   {c.fecha_adjudicacion ? new Date(c.fecha_adjudicacion).toISOString().slice(0, 10) : "—"}
                 </td>
-                <td className="px-3 py-2 font-data text-[11px] text-white">{c.numero_procedimiento}</td>
-                <td className="px-3 py-2 text-[10px] text-text-secondary whitespace-nowrap">{c.tipo_procedimiento}</td>
-                <td className="px-3 py-2 text-[11px] text-text-secondary max-w-40 truncate">
+                <td className="hidden sm:table-cell px-3 py-2 font-data text-xs text-white">{c.numero_procedimiento}</td>
+                <td className="hidden sm:table-cell px-3 py-2 text-xs text-text-secondary whitespace-nowrap">{c.tipo_procedimiento}</td>
+                <td className="px-3 py-2 text-xs text-text-secondary max-w-none sm:max-w-40 sm:truncate">
                   {(c.saf_desc || "").replace(/^\d+\s*-\s*/, "")}
                 </td>
-                <td className="px-3 py-2 text-[11px]">
+                <td className="px-3 py-2 text-xs">
                   <Link href={`/identidades/${c.cuit_proveedor}`} className="text-mint">{c.proveedor_desc}</Link>
                 </td>
-                <td className="px-3 py-2 text-right font-data text-[11px] text-white">{formatPesos(c.monto_ajustado)}</td>
+                <td className="px-3 py-2 text-right font-data text-xs text-white">{formatPesos(c.monto_ajustado)}</td>
               </tr>
             ))}
           </tbody>

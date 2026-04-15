@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProgramaConMetricas } from "@/lib/queries";
 import { getOutlierTags } from "@/lib/outliers";
 import { formatARSCompact } from "@/lib/format";
+import { getCanvasScale } from "@/lib/canvas-utils";
 
 /**
  * Scatter plot: X = log(vigente), Y = ejecución %.
@@ -33,7 +34,8 @@ export function ScatterPlot({ data }: { data: ProgramaConMetricas[] }) {
 
     const W = rect.width;
     const H = rect.height;
-    const PAD = { top: 10, right: 20, bottom: 30, left: 55 };
+    const S = getCanvasScale(W);
+    const PAD = { top: S.mobile ? 15 : 10, right: 20, bottom: S.mobile ? 40 : 30, left: S.mobile ? 50 : 55 };
     const plotW = W - PAD.left - PAD.right;
     const plotH = H - PAD.top - PAD.bottom;
 
@@ -69,7 +71,7 @@ export function ScatterPlot({ data }: { data: ProgramaConMetricas[] }) {
 
     // Grid lines and Y labels
     ctx.fillStyle = "#666666";
-    ctx.font = "9px monospace";
+    ctx.font = S.labelFont;
     ctx.textAlign = "right";
     for (const pct of [0, 25, 50, 75, 100]) {
       const y = scaleY(pct);
@@ -95,7 +97,7 @@ export function ScatterPlot({ data }: { data: ProgramaConMetricas[] }) {
 
     // Axis labels
     ctx.fillStyle = "#666666";
-    ctx.font = "9px monospace";
+    ctx.font = S.labelFont;
     ctx.textAlign = "center";
     ctx.fillText("VIGENTE →", W / 2, H - 3);
     ctx.save();
@@ -123,7 +125,7 @@ export function ScatterPlot({ data }: { data: ProgramaConMetricas[] }) {
       const isOutlier = tags.length > 0;
 
       ctx.beginPath();
-      ctx.arc(x, y, isOutlier ? 4 : 2.5, 0, Math.PI * 2);
+      ctx.arc(x, y, isOutlier ? (S.mobile ? 8 : 4) : (S.mobile ? 5 : 2.5), 0, Math.PI * 2);
       ctx.fillStyle = isOutlier
         ? tags.includes("Caja muerta") || tags.includes("Plata quieta")
           ? "#CC3333"
@@ -153,7 +155,7 @@ export function ScatterPlot({ data }: { data: ProgramaConMetricas[] }) {
     const my = e.clientY - rect.top;
 
     let closest: (typeof pointsRef.current)[0] | null = null;
-    let minDist = 15;
+    let minDist = 'ontouchstart' in window ? 25 : 15;
 
     for (const pt of pointsRef.current) {
       const d = Math.hypot(pt.x - mx, pt.y - my);
@@ -194,7 +196,7 @@ export function ScatterPlot({ data }: { data: ProgramaConMetricas[] }) {
     const my = e.clientY - rect.top;
 
     for (const pt of pointsRef.current) {
-      if (Math.hypot(pt.x - mx, pt.y - my) < 15) {
+      if (Math.hypot(pt.x - mx, pt.y - my) < ('ontouchstart' in window ? 25 : 15)) {
         const slug = `${pt.p.jurisdiccion_id}-${pt.p.entidad_id ?? 0}-${pt.p.programa_id}`;
         router.push(`/presupuesto/${slug}`);
         return;
@@ -206,7 +208,7 @@ export function ScatterPlot({ data }: { data: ProgramaConMetricas[] }) {
     <div className="relative">
       <canvas
         ref={canvasRef}
-        className="h-64 w-full cursor-crosshair"
+        className="h-[340px] sm:h-64 w-full cursor-crosshair"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => {
           if (tooltipRef.current) tooltipRef.current.style.display = "none";
@@ -218,11 +220,11 @@ export function ScatterPlot({ data }: { data: ProgramaConMetricas[] }) {
         className="pointer-events-none absolute z-50 hidden border border-gray-700 bg-gray-900 text-white px-2 py-1"
       />
       {/* Legend */}
-      <div className="flex gap-4 px-2 pt-1 text-[9px] text-muted">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 px-2 pt-1 text-xs sm:text-[9px] text-muted">
         <span><span className="mr-1 inline-block h-2 w-2 bg-alerta" />Baja ejecución / Sin pagos</span>
         <span><span className="mr-1 inline-block h-2 w-2 bg-cobalto" />Aumento por decreto</span>
         <span><span className="mr-1 inline-block h-2 w-2 bg-gris-600 opacity-30" />Normal</span>
-        <span className="ml-auto">Click en un punto para abrir dossier</span>
+        <span className="sm:ml-auto">Tocá un punto para ver el detalle</span>
       </div>
     </div>
   );

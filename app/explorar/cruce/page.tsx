@@ -14,7 +14,7 @@ export default async function CrucePage({ searchParams }: Props) {
   if (cuit && cuit2) {
     const data = await getCoocurrenciaDetalle(cuit, cuit2);
     return (
-      <div className="px-6 py-8 max-w-7xl mx-auto">
+      <div className="px-4 sm:px-6 py-8 max-w-7xl mx-auto">
         <div className="text-[10px] text-text-secondary font-data uppercase tracking-widest mb-1">
           <Link href="/" className="text-mint">Inicio</Link> / Explorar / Proveedores que coinciden
         </div>
@@ -32,7 +32,7 @@ export default async function CrucePage({ searchParams }: Props) {
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
-            <thead className="border-b border-border text-[9px] uppercase tracking-wider text-text-secondary">
+            <thead className="border-b border-border text-[10px] uppercase tracking-wider text-text-secondary">
               <tr>
                 <th className="px-3 py-2 font-medium">Organismo</th>
                 <th className="px-3 py-2 font-medium">Meses coincidentes</th>
@@ -43,10 +43,10 @@ export default async function CrucePage({ searchParams }: Props) {
             <tbody className="divide-y divide-border">
               {data.map((d, i) => (
                 <tr key={i} className="hover:bg-surface transition-colors">
-                  <td className="px-3 py-2 text-[11px] text-white">{(d.organismo || "").replace(/^\d+\s*-\s*/, "")}</td>
-                  <td className="px-3 py-2 font-data text-[10px] text-text-secondary">{d.meses.join(", ")}</td>
-                  <td className="px-3 py-2 text-right font-data text-[11px] text-white">{formatPesos(d.monto1)}</td>
-                  <td className="px-3 py-2 text-right font-data text-[11px] text-white">{formatPesos(d.monto2)}</td>
+                  <td className="px-3 py-2 text-xs text-white">{(d.organismo || "").replace(/^\d+\s*-\s*/, "")}</td>
+                  <td className="px-3 py-2 font-data text-xs text-text-secondary">{d.meses.join(", ")}</td>
+                  <td className="px-3 py-2 text-right font-data text-xs text-white">{formatPesos(d.monto1)}</td>
+                  <td className="px-3 py-2 text-right font-data text-xs text-white">{formatPesos(d.monto2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -82,23 +82,23 @@ export default async function CrucePage({ searchParams }: Props) {
               <th className="px-3 py-2 font-medium text-right">Monto (ajustado)</th>
               <th className="px-3 py-2 font-medium">Primer contrato</th>
               <th className="px-3 py-2 font-medium">Último contrato</th>
-              <th className="px-3 py-2 font-medium">Años</th>
+              <th className="hidden sm:table-cell px-3 py-2 font-medium">Años</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {data.map((d, i) => (
               <tr key={`${d.cuit}-${d.organismo}-${i}`} className="hover:bg-surface transition-colors">
-                <td className="px-3 py-2 text-[11px]">
+                <td className="px-3 py-2 text-xs">
                   <Link href={`/identidades/${d.cuit}`} className="text-mint">{d.proveedor}</Link>
                 </td>
-                <td className="px-3 py-2 text-[11px] text-text-secondary max-w-56 truncate">
+                <td className="px-3 py-2 text-xs text-text-secondary max-w-none sm:max-w-56 sm:truncate">
                   {(d.organismo || "").replace(/^\d+\s*-\s*/, "")}
                 </td>
-                <td className="px-3 py-2 text-right font-data text-[11px] text-white">{d.contratos}</td>
-                <td className="px-3 py-2 text-right font-data text-[11px] text-white">{formatPesos(d.monto_total)}</td>
-                <td className="px-3 py-2 font-data text-[10px] text-text-secondary">{d.primer_contrato || "—"}</td>
-                <td className="px-3 py-2 font-data text-[10px] text-text-secondary">{d.ultimo_contrato || "—"}</td>
-                <td className="px-3 py-2 font-data text-[10px] text-text-secondary">{d.ejercicios?.join(", ")}</td>
+                <td className="px-3 py-2 text-right font-data text-xs text-white">{d.contratos}</td>
+                <td className="px-3 py-2 text-right font-data text-xs text-white">{formatPesos(d.monto_total)}</td>
+                <td className="px-3 py-2 font-data text-xs text-text-secondary">{d.primer_contrato || "—"}</td>
+                <td className="px-3 py-2 font-data text-xs text-text-secondary">{d.ultimo_contrato || "—"}</td>
+                <td className="hidden sm:table-cell px-3 py-2 font-data text-xs text-text-secondary">{d.ejercicios?.join(", ")}</td>
               </tr>
             ))}
           </tbody>
