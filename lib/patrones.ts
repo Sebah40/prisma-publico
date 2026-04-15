@@ -3,7 +3,8 @@
  * indicadores factuales. No interpreta, no puntúa — muestra.
  */
 
-import { getSupabase, isSupabaseConfigured } from "./supabase";
+import { getPool } from "./db";
+import { EMPRESAS } from "./privacy";
 
 // --- Types ---
 
@@ -47,181 +48,119 @@ export interface ContratoDetalle {
  * Top CUITs por monto total adjudicado.
  */
 export async function getTopProveedores(limit = 20): Promise<PatronCUIT[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
+  const { rows } = await pool.query(`
+    SELECT cuit, razon_social, total_adjudicado, total_adjudicado_ajustado,
+           cantidad_contratos, anios_activo, jurisdicciones_distintas
+    FROM proveedores WHERE cantidad_contratos > 0 AND ${EMPRESAS.cuit}
+    ORDER BY total_adjudicado_ajustado DESC LIMIT $1
+  `, [limit]);
 
-  const { data } = await supabase
-    .from("proveedores")
-    .select("cuit, razon_social, total_adjudicado, total_adjudicado_ajustado, cantidad_contratos, anios_activo, jurisdicciones_distintas")
-    .gt("cantidad_contratos", 0)
-    .or('cuit.like.30-%,cuit.like.33-%,cuit.like.34-%')
-    .order("total_adjudicado_ajustado", { ascending: false })
-    .limit(limit);
-
-  return ((data ?? []) as PatronCUIT[]).map(p => ({
-    ...p,
-    indicadores: buildIndicadores(p),
-  }));
+  return (rows as PatronCUIT[]).map(p => ({ ...p, indicadores: buildIndicadores(p) }));
 }
 
 /**
  * CUITs recurrentes: ganaron contratos en 3+ años.
  */
 export async function getRecurrentes(limit = 30): Promise<PatronCUIT[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
+  const { rows } = await pool.query(`
+    SELECT cuit, razon_social, total_adjudicado, cantidad_contratos, anios_activo, jurisdicciones_distintas
+    FROM proveedores WHERE anios_activo >= 3 AND ${EMPRESAS.cuit}
+    ORDER BY anios_activo DESC LIMIT $1
+  `, [limit]);
 
-  const { data } = await supabase
-    .from("proveedores")
-    .select("cuit, razon_social, total_adjudicado, cantidad_contratos, anios_activo, jurisdicciones_distintas")
-    .gte("anios_activo", 3)
-    .or('cuit.like.30-%,cuit.like.33-%,cuit.like.34-%')
-    .order("anios_activo", { ascending: false })
-    .limit(limit);
-
-  return ((data ?? []) as PatronCUIT[]).map(p => ({
-    ...p,
-    indicadores: buildIndicadores(p),
-  }));
+  return (rows as PatronCUIT[]).map(p => ({ ...p, indicadores: buildIndicadores(p) }));
 }
 
 /**
  * CUITs concentrados: operan en 1 sola jurisdicción con muchos contratos.
  */
 export async function getConcentrados(limit = 30): Promise<PatronCUIT[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
+  const { rows } = await pool.query(`
+    SELECT cuit, razon_social, total_adjudicado, cantidad_contratos, anios_activo, jurisdicciones_distintas
+    FROM proveedores WHERE jurisdicciones_distintas = 1 AND cantidad_contratos >= 5 AND ${EMPRESAS.cuit}
+    ORDER BY total_adjudicado DESC LIMIT $1
+  `, [limit]);
 
-  const { data } = await supabase
-    .from("proveedores")
-    .select("cuit, razon_social, total_adjudicado, cantidad_contratos, anios_activo, jurisdicciones_distintas")
-    .eq("jurisdicciones_distintas", 1)
-    .gte("cantidad_contratos", 5)
-    .or('cuit.like.30-%,cuit.like.33-%,cuit.like.34-%')
-    .order("total_adjudicado", { ascending: false })
-    .limit(limit);
-
-  return ((data ?? []) as PatronCUIT[]).map(p => ({
-    ...p,
-    indicadores: buildIndicadores(p),
-  }));
+  return (rows as PatronCUIT[]).map(p => ({ ...p, indicadores: buildIndicadores(p) }));
 }
 
 /**
  * CUITs diversificados: operan en 5+ jurisdicciones.
  */
 export async function getDiversificados(limit = 30): Promise<PatronCUIT[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
+  const { rows } = await pool.query(`
+    SELECT cuit, razon_social, total_adjudicado, cantidad_contratos, anios_activo, jurisdicciones_distintas
+    FROM proveedores WHERE jurisdicciones_distintas >= 5 AND ${EMPRESAS.cuit}
+    ORDER BY jurisdicciones_distintas DESC LIMIT $1
+  `, [limit]);
 
-  const { data } = await supabase
-    .from("proveedores")
-    .select("cuit, razon_social, total_adjudicado, cantidad_contratos, anios_activo, jurisdicciones_distintas")
-    .gte("jurisdicciones_distintas", 5)
-    .or('cuit.like.30-%,cuit.like.33-%,cuit.like.34-%')
-    .order("jurisdicciones_distintas", { ascending: false })
-    .limit(limit);
-
-  return ((data ?? []) as PatronCUIT[]).map(p => ({
-    ...p,
-    indicadores: buildIndicadores(p),
-  }));
+  return (rows as PatronCUIT[]).map(p => ({ ...p, indicadores: buildIndicadores(p) }));
 }
 
 /**
  * Jurisdicciones por % de contratación directa.
  */
 export async function getPatronesJurisdiccion(): Promise<PatronJurisdiccion[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
+  const { rows } = await pool.query(`
+    SELECT saf_id, MAX(saf_desc) as saf_desc,
+           COUNT(*) as total_contratos,
+           COUNT(*) FILTER (WHERE tipo_procedimiento ILIKE '%directa%') as total_directas,
+           SUM(monto) as total_monto,
+           COUNT(DISTINCT cuit_proveedor) as proveedores_unicos
+    FROM adjudicaciones_historicas WHERE moneda = 'ARS'
+    GROUP BY saf_id HAVING COUNT(*) >= 5
+    ORDER BY (COUNT(*) FILTER (WHERE tipo_procedimiento ILIKE '%directa%'))::float / COUNT(*) DESC
+  `);
 
-  const { data } = await supabase
-    .from("adjudicaciones_historicas")
-    .select("saf_id, saf_desc, tipo_procedimiento, monto, cuit_proveedor, moneda")
-    .eq("moneda", "ARS");
-
-  if (!data?.length) return [];
-
-  const mapa = new Map<number, {
-    saf_desc: string;
-    total: number;
-    directas: number;
-    monto: number;
-    proveedores: Set<string>;
-  }>();
-
-  for (const row of data as { saf_id: number; saf_desc: string; tipo_procedimiento: string; monto: number; cuit_proveedor: string; moneda: string }[]) {
-    const e = mapa.get(row.saf_id) ?? {
-      saf_desc: row.saf_desc,
-      total: 0, directas: 0, monto: 0,
-      proveedores: new Set(),
-    };
-    e.total++;
-    if (row.tipo_procedimiento?.toLowerCase().includes('directa')) e.directas++;
-    e.monto += Number(row.monto);
-    e.proveedores.add(row.cuit_proveedor);
-    mapa.set(row.saf_id, e);
-  }
-
-  return Array.from(mapa.entries())
-    .map(([saf_id, e]) => ({
-      saf_id,
-      saf_desc: e.saf_desc,
-      total_contratos: e.total,
-      total_directas: e.directas,
-      pct_directas: e.total > 0 ? (e.directas / e.total) * 100 : 0,
-      total_monto: e.monto,
-      proveedores_unicos: e.proveedores.size,
-    }))
-    .filter(j => j.total_contratos >= 5)
-    .sort((a, b) => b.pct_directas - a.pct_directas);
+  return rows.map((r: Record<string, unknown>) => ({
+    saf_id: Number(r.saf_id),
+    saf_desc: String(r.saf_desc),
+    total_contratos: Number(r.total_contratos),
+    total_directas: Number(r.total_directas),
+    pct_directas: Number(r.total_contratos) > 0 ? (Number(r.total_directas) / Number(r.total_contratos)) * 100 : 0,
+    total_monto: Number(r.total_monto),
+    proveedores_unicos: Number(r.proveedores_unicos),
+  }));
 }
 
 /**
  * Contratos de un CUIT específico (para drill-down).
  */
 export async function getContratosCUIT(cuit: string): Promise<ContratoDetalle[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
+  const { rows } = await pool.query(`
+    SELECT id, numero_procedimiento, saf_desc, tipo_procedimiento, ejercicio,
+           fecha_adjudicacion, cuit_proveedor, proveedor_desc, monto, moneda
+    FROM adjudicaciones_historicas WHERE cuit_proveedor = $1 ORDER BY monto DESC
+  `, [cuit]);
 
-  const { data } = await supabase
-    .from("adjudicaciones_historicas")
-    .select("id, numero_procedimiento, saf_desc, tipo_procedimiento, ejercicio, fecha_adjudicacion, cuit_proveedor, proveedor_desc, monto, moneda")
-    .eq("cuit_proveedor", cuit)
-    .order("monto", { ascending: false });
-
-  return (data ?? []) as ContratoDetalle[];
+  return rows as ContratoDetalle[];
 }
 
 /**
  * Timeline: contratos por mes (para detectar spikes de fin de año).
  */
 export async function getTimeline(): Promise<{ month: string; count: number; monto: number; directas: number }[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
+  const { rows } = await pool.query(`
+    SELECT TO_CHAR(fecha_adjudicacion, 'YYYY-MM') as month,
+           COUNT(*) as count, SUM(monto) as monto,
+           COUNT(*) FILTER (WHERE tipo_procedimiento ILIKE '%directa%') as directas
+    FROM adjudicaciones_historicas WHERE fecha_adjudicacion IS NOT NULL
+    GROUP BY month ORDER BY month ASC
+  `);
 
-  const { data } = await supabase
-    .from("adjudicaciones_historicas")
-    .select("fecha_adjudicacion, tipo_procedimiento, monto");
-
-  if (!data?.length) return [];
-
-  const mapa = new Map<string, { count: number; monto: number; directas: number }>();
-
-  for (const row of data as { fecha_adjudicacion: string | null; tipo_procedimiento: string; monto: number }[]) {
-    const fecha = row.fecha_adjudicacion;
-    if (!fecha) continue;
-    const month = fecha.substring(0, 7); // "2020-03"
-    const e = mapa.get(month) ?? { count: 0, monto: 0, directas: 0 };
-    e.count++;
-    e.monto += Number(row.monto);
-    if (row.tipo_procedimiento?.toLowerCase().includes("directa")) e.directas++;
-    mapa.set(month, e);
-  }
-
-  return Array.from(mapa.entries())
-    .map(([month, e]) => ({ month, ...e }))
-    .sort((a, b) => a.month.localeCompare(b.month));
+  return rows.map((r: Record<string, unknown>) => ({
+    month: String(r.month),
+    count: Number(r.count),
+    monto: Number(r.monto),
+    directas: Number(r.directas),
+  }));
 }
 
 /**
@@ -229,32 +168,22 @@ export async function getTimeline(): Promise<{ month: string; count: number; mon
  * Revela si los contratos grandes van por directa.
  */
 export async function getDirectaPorMonto(): Promise<{ saf: string; pctDirectaCantidad: number; pctDirectaMonto: number }[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
+  const { rows } = await pool.query(`
+    SELECT saf_desc as saf,
+           COUNT(*) as total,
+           COUNT(*) FILTER (WHERE tipo_procedimiento ILIKE '%directa%') as directas,
+           SUM(monto) as monto_total,
+           SUM(monto) FILTER (WHERE tipo_procedimiento ILIKE '%directa%') as monto_directas
+    FROM adjudicaciones_historicas WHERE moneda = 'ARS'
+    GROUP BY saf_desc HAVING COUNT(*) > 0
+  `);
 
-  const { data } = await supabase
-    .from("adjudicaciones_historicas")
-    .select("saf_desc, tipo_procedimiento, monto, moneda")
-    .eq("moneda", "ARS");
-
-  if (!data?.length) return [];
-
-  const mapa = new Map<string, { total: number; directas: number; montoTotal: number; montoDirectas: number }>();
-
-  for (const row of data as { saf_desc: string; tipo_procedimiento: string; monto: number }[]) {
-    const e = mapa.get(row.saf_desc) ?? { total: 0, directas: 0, montoTotal: 0, montoDirectas: 0 };
-    const isDirecta = row.tipo_procedimiento?.toLowerCase().includes("directa");
-    e.total++;
-    e.montoTotal += Number(row.monto);
-    if (isDirecta) { e.directas++; e.montoDirectas += Number(row.monto); }
-    mapa.set(row.saf_desc, e);
-  }
-
-  return Array.from(mapa.entries())
-    .map(([saf, e]) => ({
-      saf,
-      pctDirectaCantidad: e.total > 0 ? (e.directas / e.total) * 100 : 0,
-      pctDirectaMonto: e.montoTotal > 0 ? (e.montoDirectas / e.montoTotal) * 100 : 0,
+  return rows
+    .map((r: Record<string, unknown>) => ({
+      saf: String(r.saf),
+      pctDirectaCantidad: Number(r.total) > 0 ? (Number(r.directas) / Number(r.total)) * 100 : 0,
+      pctDirectaMonto: Number(r.monto_total) > 0 ? (Number(r.monto_directas) / Number(r.monto_total)) * 100 : 0,
     }))
     .filter(d => d.pctDirectaMonto > 30 && d.pctDirectaCantidad > 0)
     .sort((a, b) => (b.pctDirectaMonto - b.pctDirectaCantidad) - (a.pctDirectaMonto - a.pctDirectaCantidad))

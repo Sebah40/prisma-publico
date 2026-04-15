@@ -1,4 +1,4 @@
-import { getSupabase, isSupabaseConfigured } from "./supabase";
+import { getPool } from "./db";
 import type { PresupuestoDiario } from "./database.types";
 
 export interface JurisdiccionAgregada {
@@ -25,26 +25,18 @@ export interface ProgramaConMetricas extends PresupuestoDiario {
  * Obtiene todos los programas del snapshot más reciente.
  */
 export async function getUltimoSnapshot(): Promise<PresupuestoDiario[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
 
-  // Encontrar la fecha más reciente
-  const { data: fechas } = await supabase
-    .from("presupuesto_diario")
-    .select("fecha")
-    .order("fecha", { ascending: false })
-    .limit(1);
+  const { rows: fechas } = await pool.query(
+    `SELECT fecha FROM presupuesto_diario ORDER BY fecha DESC LIMIT 1`
+  );
+  if (!fechas.length) return [];
 
-  if (!fechas?.length) return [];
-  const fecha = (fechas[0] as { fecha: string }).fecha;
-
-  const { data } = await supabase
-    .from("presupuesto_diario")
-    .select("*")
-    .eq("fecha", fecha)
-    .order("credito_vigente", { ascending: false });
-
-  return (data ?? []) as PresupuestoDiario[];
+  const { rows } = await pool.query(
+    `SELECT * FROM presupuesto_diario WHERE fecha = $1 ORDER BY credito_vigente DESC`,
+    [fechas[0].fecha]
+  );
+  return rows as PresupuestoDiario[];
 }
 
 /**
@@ -123,16 +115,11 @@ export async function getSnapshotsPrograma(
   entidadId: number,
   programaId: number
 ): Promise<PresupuestoDiario[]> {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
 
-  const { data } = await supabase
-    .from("presupuesto_diario")
-    .select("*")
-    .eq("jurisdiccion_id", jurisdiccionId)
-    .eq("entidad_id", entidadId)
-    .eq("programa_id", programaId)
-    .order("fecha", { ascending: true });
-
-  return (data ?? []) as PresupuestoDiario[];
+  const { rows } = await pool.query(
+    `SELECT * FROM presupuesto_diario WHERE jurisdiccion_id = $1 AND entidad_id = $2 AND programa_id = $3 ORDER BY fecha ASC`,
+    [jurisdiccionId, entidadId, programaId]
+  );
+  return rows as PresupuestoDiario[];
 }

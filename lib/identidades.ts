@@ -5,7 +5,8 @@
  * Las etiquetas son factuales ("Recurrente" = ganó en 3+ años).
  */
 
-import { getSupabase, isSupabaseConfigured } from "./supabase";
+import { getPool } from "./db";
+import { EMPRESAS } from "./privacy";
 
 // --- Types ---
 
@@ -79,32 +80,35 @@ export async function getProveedores(opts: {
   pageSize?: number;
   orderBy?: string;
 }): Promise<{ data: ProveedorConEtiquetas[]; total: number }> {
-  if (!isSupabaseConfigured()) return { data: [], total: 0 };
-  const supabase = getSupabase();
+  const pool = getPool();
   const { search, page = 1, pageSize = 50, orderBy = "total_adjudicado_ajustado" } = opts;
 
-  let query = supabase
-    .from("proveedores")
-    .select("*", { count: "exact" })
-    .gt("cantidad_contratos", 0)
-    .or('cuit.like.30-%,cuit.like.33-%,cuit.like.34-%')
-    .order(orderBy, { ascending: false });
+  const allowedOrder = ["total_adjudicado_ajustado", "total_adjudicado", "cantidad_contratos", "jurisdicciones_distintas"];
+  const order = allowedOrder.includes(orderBy) ? orderBy : "total_adjudicado_ajustado";
+  const offset = (page - 1) * pageSize;
+
+  let where = `cantidad_contratos > 0 AND ${EMPRESAS.cuit}`;
+  const params: (string | number)[] = [];
+  let paramIdx = 1;
 
   if (search) {
-    query = query.or(
-      `razon_social.ilike.%${search}%,cuit.ilike.%${search}%`
-    );
+    params.push(`%${search}%`, `%${search}%`);
+    where += ` AND (razon_social ILIKE $${paramIdx} OR cuit ILIKE $${paramIdx + 1})`;
+    paramIdx += 2;
   }
 
-  const from = (page - 1) * pageSize;
-  query = query.range(from, from + pageSize - 1);
+  params.push(pageSize, offset);
+  const limitParam = paramIdx;
+  const offsetParam = paramIdx + 1;
 
-  const { data, count } = await query;
-  const rows = (data ?? []) as ProveedorConEtiquetas[];
+  const [{ rows }, { rows: [{ n }] }] = await Promise.all([
+    pool.query(`SELECT * FROM proveedores WHERE ${where} ORDER BY ${order} DESC LIMIT $${limitParam} OFFSET $${offsetParam}`, params),
+    pool.query(`SELECT COUNT(*) as n FROM proveedores WHERE ${where}`, params.slice(0, paramIdx - 1)),
+  ]);
 
   return {
-    data: rows.map((r) => ({ ...r, etiquetas: computeEtiquetas(r) })),
-    total: count ?? 0,
+    data: (rows as ProveedorConEtiquetas[]).map((r) => ({ ...r, etiquetas: computeEtiquetas(r) })),
+    total: Number(n),
   };
 }
 
@@ -117,30 +121,22 @@ export async function getFichaIdentidad(
   // Excluir personas físicas (Ley 25.326)
   if (/^(20|23|24|27)-/.test(cuit)) return null;
 
-  if (!isSupabaseConfigured()) return null;
-  const supabase = getSupabase();
+  const pool = getPool();
 
-  const { data: prov } = await supabase
-    .from("proveedores")
-    .select("*")
-    .eq("cuit", cuit)
-    .limit(1);
+  const { rows: provRows } = await pool.query(
+    `SELECT * FROM proveedores WHERE cuit = $1 LIMIT 1`, [cuit]
+  );
+  if (!provRows.length) return null;
+  const p = provRows[0] as Record<string, unknown>;
 
-  if (!prov?.length) return null;
-  const p = prov[0] as Record<string, unknown>;
+  const { rows: adjRows } = await pool.query(
+    `SELECT * FROM adjudicaciones_historicas WHERE cuit_proveedor = $1 ORDER BY fecha_adjudicacion DESC`, [cuit]
+  );
+  const historial = adjRows as AdjudicacionHistorica[];
 
-  const { data: adjs } = await supabase
-    .from("adjudicaciones_historicas")
-    .select("*")
-    .eq("cuit_proveedor", cuit)
-    .order("fecha_adjudicacion", { ascending: false });
-
-  const historial = (adjs ?? []) as AdjudicacionHistorica[];
-
-  // Calcular órbita principal (jurisdicción donde más ganó)
   const orbita = await getOrbitaPrincipal(cuit);
 
-  const ficha: FichaIdentidad = {
+  return {
     cuit: String(p.cuit),
     razon_social: String(p.razon_social),
     tipo_personeria: p.tipo_personeria as string | null,
@@ -156,8 +152,6 @@ export async function getFichaIdentidad(
     historial,
     etiquetas: computeEtiquetas(p as unknown as ProveedorConEtiquetas),
   };
-
-  return ficha;
 }
 
 /**
@@ -166,66 +160,39 @@ export async function getFichaIdentidad(
 export async function getConcentracion(
   jurisdiccionId: number
 ): Promise<ConcentracionJurisdiccion | null> {
-  if (!isSupabaseConfigured()) return null;
-  const supabase = getSupabase();
+  const pool = getPool();
 
-  // Get SAF IDs for this jurisdiccion
-  const { data: safRows } = await supabase
-    .from("map_saf_jurisdiccion")
-    .select("saf_id, jurisdiccion_desc")
-    .eq("jurisdiccion_id", jurisdiccionId);
-
-  if (!safRows?.length) return null;
-  const safIds = (safRows as { saf_id: number; jurisdiccion_desc: string }[]).map((r) => r.saf_id);
-  const jurDesc = (safRows[0] as { jurisdiccion_desc: string }).jurisdiccion_desc;
-
-  // Get all adjudicaciones for these SAFs
-  const { data: adjs } = await supabase
-    .from("adjudicaciones_historicas")
-    .select("cuit_proveedor, monto, saf_id")
-    .in("saf_id", safIds);
-
-  if (!adjs?.length) return null;
-
-  const provMap = new Map<string, { monto: number; contratos: number }>();
-  let totalMonto = 0;
-  let totalContratos = 0;
-
-  for (const a of adjs as { cuit_proveedor: string; monto: number }[]) {
-    const m = provMap.get(a.cuit_proveedor) ?? { monto: 0, contratos: 0 };
-    m.monto += Number(a.monto);
-    m.contratos += 1;
-    provMap.set(a.cuit_proveedor, m);
-    totalMonto += Number(a.monto);
-    totalContratos += 1;
-  }
-
-  // Get razon_social for top providers
-  const sorted = Array.from(provMap.entries())
-    .sort((a, b) => b[1].monto - a[1].monto)
-    .slice(0, 10);
-
-  const cuits = sorted.map((s) => s[0]);
-  const { data: provs } = await supabase
-    .from("proveedores")
-    .select("cuit, razon_social")
-    .in("cuit", cuits);
-
-  const nameMap = new Map(
-    ((provs ?? []) as { cuit: string; razon_social: string }[]).map((p) => [p.cuit, p.razon_social])
+  const { rows: safRows } = await pool.query(
+    `SELECT saf_id, jurisdiccion_desc FROM map_saf_jurisdiccion WHERE jurisdiccion_id = $1`, [jurisdiccionId]
   );
+  if (!safRows.length) return null;
+  const safIds = safRows.map((r: Record<string, unknown>) => Number(r.saf_id));
+  const jurDesc = String(safRows[0].jurisdiccion_desc);
+
+  const { rows } = await pool.query(`
+    SELECT ah.cuit_proveedor, SUM(ah.monto) as monto, COUNT(*) as contratos,
+           p.razon_social
+    FROM adjudicaciones_historicas ah
+    JOIN proveedores p ON ah.cuit_proveedor = p.cuit
+    WHERE ah.saf_id = ANY($1)
+    GROUP BY ah.cuit_proveedor, p.razon_social
+    ORDER BY monto DESC LIMIT 10
+  `, [safIds]);
+
+  const totalMonto = rows.reduce((s: number, r: Record<string, unknown>) => s + Number(r.monto), 0);
+  const totalContratos = rows.reduce((s: number, r: Record<string, unknown>) => s + Number(r.contratos), 0);
 
   return {
     jurisdiccion_id: jurisdiccionId,
     jurisdiccion_desc: jurDesc,
     total_monto: totalMonto,
     total_contratos: totalContratos,
-    top_proveedores: sorted.map(([cuit, m]) => ({
-      cuit,
-      razon_social: nameMap.get(cuit) ?? "Desconocido",
-      monto: m.monto,
-      contratos: m.contratos,
-      pct_monto: totalMonto > 0 ? (m.monto / totalMonto) * 100 : 0,
+    top_proveedores: rows.map((r: Record<string, unknown>) => ({
+      cuit: String(r.cuit_proveedor),
+      razon_social: String(r.razon_social),
+      monto: Number(r.monto),
+      contratos: Number(r.contratos),
+      pct_monto: totalMonto > 0 ? (Number(r.monto) / totalMonto) * 100 : 0,
     })),
   };
 }
@@ -239,96 +206,55 @@ export async function getContratistasJurisdiccion(
 ): Promise<
   { cuit: string; razon_social: string; monto: number; contratos: number; anios: number }[]
 > {
-  if (!isSupabaseConfigured()) return [];
-  const supabase = getSupabase();
+  const pool = getPool();
 
-  const { data: safRows } = await supabase
-    .from("map_saf_jurisdiccion")
-    .select("saf_id")
-    .eq("jurisdiccion_id", jurisdiccionId);
-
-  if (!safRows?.length) return [];
-  const safIds = (safRows as { saf_id: number }[]).map((r) => r.saf_id);
-
-  const { data: adjs } = await supabase
-    .from("adjudicaciones_historicas")
-    .select("cuit_proveedor, monto, ejercicio")
-    .in("saf_id", safIds);
-
-  if (!adjs?.length) return [];
-
-  const provMap = new Map<
-    string,
-    { monto: number; contratos: number; years: Set<number> }
-  >();
-  for (const a of adjs as { cuit_proveedor: string; monto: number; ejercicio: number }[]) {
-    const m = provMap.get(a.cuit_proveedor) ?? {
-      monto: 0,
-      contratos: 0,
-      years: new Set(),
-    };
-    m.monto += Number(a.monto);
-    m.contratos += 1;
-    m.years.add(a.ejercicio);
-    provMap.set(a.cuit_proveedor, m);
-  }
-
-  const sorted = Array.from(provMap.entries())
-    .sort((a, b) => b[1].monto - a[1].monto)
-    .slice(0, limit);
-
-  const cuits = sorted.map((s) => s[0]);
-  const { data: provs } = await supabase
-    .from("proveedores")
-    .select("cuit, razon_social")
-    .in("cuit", cuits);
-
-  const nameMap = new Map(
-    ((provs ?? []) as { cuit: string; razon_social: string }[]).map((p) => [p.cuit, p.razon_social])
+  const { rows: safRows } = await pool.query(
+    `SELECT saf_id FROM map_saf_jurisdiccion WHERE jurisdiccion_id = $1`, [jurisdiccionId]
   );
+  if (!safRows.length) return [];
+  const safIds = safRows.map((r: Record<string, unknown>) => Number(r.saf_id));
 
-  return sorted.map(([cuit, m]) => ({
-    cuit,
-    razon_social: nameMap.get(cuit) ?? "Desconocido",
-    monto: m.monto,
-    contratos: m.contratos,
-    anios: m.years.size,
+  const { rows } = await pool.query(`
+    SELECT ah.cuit_proveedor, p.razon_social,
+           SUM(ah.monto) as monto, COUNT(*) as contratos,
+           COUNT(DISTINCT ah.ejercicio) as anios
+    FROM adjudicaciones_historicas ah
+    JOIN proveedores p ON ah.cuit_proveedor = p.cuit
+    WHERE ah.saf_id = ANY($1)
+    GROUP BY ah.cuit_proveedor, p.razon_social
+    ORDER BY monto DESC LIMIT $2
+  `, [safIds, limit]);
+
+  return rows.map((r: Record<string, unknown>) => ({
+    cuit: String(r.cuit_proveedor),
+    razon_social: String(r.razon_social),
+    monto: Number(r.monto),
+    contratos: Number(r.contratos),
+    anios: Number(r.anios),
   }));
 }
 
 // --- Helpers ---
 
 async function getOrbitaPrincipal(cuit: string) {
-  const supabase = getSupabase();
+  const pool = getPool();
 
-  const { data: adjs } = await supabase
-    .from("adjudicaciones_historicas")
-    .select("saf_id, monto")
-    .eq("cuit_proveedor", cuit);
+  const { rows } = await pool.query(`
+    SELECT ah.saf_id, SUM(ah.monto) as monto, m.jurisdiccion_id, m.jurisdiccion_desc
+    FROM adjudicaciones_historicas ah
+    LEFT JOIN map_saf_jurisdiccion m ON ah.saf_id = m.saf_id
+    WHERE ah.cuit_proveedor = $1
+    GROUP BY ah.saf_id, m.jurisdiccion_id, m.jurisdiccion_desc
+    ORDER BY monto DESC LIMIT 1
+  `, [cuit]);
 
-  if (!adjs?.length) return null;
-
-  const safTotals = new Map<number, number>();
-  for (const a of adjs as { saf_id: number; monto: number }[]) {
-    safTotals.set(a.saf_id, (safTotals.get(a.saf_id) ?? 0) + Number(a.monto));
-  }
-
-  const topSaf = Array.from(safTotals.entries()).sort((a, b) => b[1] - a[1])[0];
-  if (!topSaf) return null;
-
-  const { data: mapping } = await supabase
-    .from("map_saf_jurisdiccion")
-    .select("jurisdiccion_id, jurisdiccion_desc")
-    .eq("saf_id", topSaf[0])
-    .limit(1);
-
-  if (!mapping?.length) return null;
-  const m = mapping[0] as { jurisdiccion_id: number; jurisdiccion_desc: string };
+  if (!rows.length || !rows[0].jurisdiccion_id) return null;
+  const r = rows[0] as Record<string, unknown>;
 
   return {
-    jurisdiccion_id: m.jurisdiccion_id,
-    jurisdiccion_desc: m.jurisdiccion_desc,
-    monto: topSaf[1],
+    jurisdiccion_id: Number(r.jurisdiccion_id),
+    jurisdiccion_desc: String(r.jurisdiccion_desc),
+    monto: Number(r.monto),
   };
 }
 

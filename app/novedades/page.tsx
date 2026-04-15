@@ -1,4 +1,4 @@
-import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { getPool } from "@/lib/db";
 import { formatARSCompact, formatEjecucion } from "@/lib/format";
 import type { AlertaTipo, Novedad, IngestaLog } from "@/lib/database.types";
 
@@ -13,37 +13,20 @@ export const dynamic = "force-dynamic";
 
 export default async function NovedadesPage() {
   const hoy = new Date().toISOString().slice(0, 10);
+  const pool = getPool();
 
-  if (!isSupabaseConfigured()) {
-    return <EmptyState fecha={hoy} message="Supabase no configurado" />;
-  }
+  const { rows: fechaRows } = await pool.query(
+    `SELECT fecha FROM novedades ORDER BY fecha DESC LIMIT 1`
+  );
+  const fecha = fechaRows[0]?.fecha ?? hoy;
 
-  const supabase = getSupabase();
+  const [{ rows: novedades }, { rows: logRows }] = await Promise.all([
+    pool.query(`SELECT * FROM novedades WHERE fecha = $1 ORDER BY magnitud DESC`, [fecha]),
+    pool.query(`SELECT * FROM ingestas_log WHERE fecha = $1 ORDER BY created_at DESC LIMIT 1`, [fecha]),
+  ]);
 
-  // Buscar novedades del día más reciente
-  const { data: ultimaFecha } = await supabase
-    .from("novedades")
-    .select("fecha")
-    .order("fecha", { ascending: false })
-    .limit(1);
-
-  const fecha = (ultimaFecha as { fecha: string }[] | null)?.[0]?.fecha ?? hoy;
-
-  const { data: novedades } = await supabase
-    .from("novedades")
-    .select("*")
-    .eq("fecha", fecha)
-    .order("magnitud", { ascending: false });
-
-  const { data: logEntry } = await supabase
-    .from("ingestas_log")
-    .select("*")
-    .eq("fecha", fecha)
-    .order("created_at", { ascending: false })
-    .limit(1);
-
-  const log = (logEntry as IngestaLog[] | null)?.[0];
-  const items = (novedades ?? []) as Novedad[];
+  const log = (logRows[0] as IngestaLog) ?? null;
+  const items = novedades as Novedad[];
   const boostCount = items.filter((n) => n.tipo === "BOOST").length;
   const haltCount = items.filter((n) => n.tipo === "HALT").length;
 

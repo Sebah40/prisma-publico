@@ -5,7 +5,6 @@
  * y adjudicaciones del Estado. Sin emitir juicio — solo datos y fechas.
  */
 
-import { getSupabase, isSupabaseConfigured } from "./supabase";
 import { adjustForInflation, toYearMonth } from "./inflation";
 import { getPool } from "./db";
 
@@ -67,33 +66,17 @@ export interface CoincidenciaFinanciamiento {
 export async function getVinculacionPolitica(
   cuit: string
 ): Promise<VinculacionPolitica | null> {
-  if (!isSupabaseConfigured()) return null;
-  const supabase = getSupabase();
+  const pool = getPool();
 
-  // Aportes de este CUIT
-  const { data: aportes } = await supabase
-    .from("aportes_campania")
-    .select("*")
-    .eq("cuit_donante", cuit)
-    .order("eleccion_anio", { ascending: true });
+  const [aportesRes, contratosRes, provRes] = await Promise.all([
+    pool.query(`SELECT * FROM aportes_campania WHERE cuit_donante = $1 ORDER BY eleccion_anio ASC`, [cuit]),
+    pool.query(`SELECT fecha_adjudicacion, saf_desc, monto, moneda, ejercicio FROM adjudicaciones_historicas WHERE cuit_proveedor = $1 ORDER BY fecha_adjudicacion ASC`, [cuit]),
+    pool.query(`SELECT razon_social, total_adjudicado FROM proveedores WHERE cuit = $1 LIMIT 1`, [cuit]),
+  ]);
 
-  // Adjudicaciones de este CUIT
-  const { data: contratos } = await supabase
-    .from("adjudicaciones_historicas")
-    .select("fecha_adjudicacion, saf_desc, monto, moneda, ejercicio")
-    .eq("cuit_proveedor", cuit)
-    .order("fecha_adjudicacion", { ascending: true });
-
-  // Proveedor info
-  const { data: prov } = await supabase
-    .from("proveedores")
-    .select("razon_social, total_adjudicado")
-    .eq("cuit", cuit)
-    .limit(1);
-
-  const aportesTyped = (aportes ?? []) as AporteCampania[];
-  const contratosTyped = (contratos ?? []) as { fecha_adjudicacion: string | null; saf_desc: string; monto: number; moneda: string; ejercicio: number }[];
-  const provData = (prov as { razon_social: string; total_adjudicado: number }[] | null)?.[0];
+  const aportesTyped = aportesRes.rows as AporteCampania[];
+  const contratosTyped = contratosRes.rows as { fecha_adjudicacion: string | null; saf_desc: string; monto: number; moneda: string; ejercicio: number }[];
+  const provData = provRes.rows[0] as { razon_social: string; total_adjudicado: number } | undefined;
 
   if (aportesTyped.length === 0 && contratosTyped.length === 0) return null;
 
@@ -154,7 +137,6 @@ export async function getVinculacionPolitica(
 export async function getCoincidencias(
   limit = 30
 ): Promise<CoincidenciaFinanciamiento[]> {
-  if (!isSupabaseConfigured()) return [];
 
   const pool = getPool();
 
