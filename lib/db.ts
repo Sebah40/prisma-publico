@@ -14,6 +14,10 @@ types.setTypeParser(1082, (val: string) => val);           // date
 types.setTypeParser(1114, (val: string) => val);           // timestamp
 types.setTypeParser(1184, (val: string) => val);           // timestamptz
 
+// Return numeric/bigint as JS numbers (pg defaults to strings for these)
+types.setTypeParser(20, (val: string) => Number(val));     // int8 / bigint
+types.setTypeParser(1700, (val: string) => Number(val));   // numeric / decimal
+
 let pool: Pool | null = null;
 
 export function getPool(): Pool {
