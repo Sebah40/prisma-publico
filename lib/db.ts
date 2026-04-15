@@ -7,7 +7,12 @@
  * their own pg.Client instances.
  */
 
-import { Pool } from "pg";
+import { Pool, types } from "pg";
+
+// Return dates as ISO strings, not Date objects
+types.setTypeParser(1082, (val: string) => val);           // date
+types.setTypeParser(1114, (val: string) => val);           // timestamp
+types.setTypeParser(1184, (val: string) => val);           // timestamptz
 
 let pool: Pool | null = null;
 
