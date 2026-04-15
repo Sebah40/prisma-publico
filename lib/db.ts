@@ -15,13 +15,13 @@ export function getPool(): Pool {
   if (!pool) {
     pool = new Pool({
       host: "aws-1-us-east-2.pooler.supabase.com",
-      port: 6543, // Transaction mode — no session limit
+      port: 5432, // Session mode pooler
       database: "postgres",
       user: "postgres.sfecaatmpqppyoyaqksq",
       password: process.env.SUPABASE_DB_PASSWORD!,
       ssl: { rejectUnauthorized: false },
-      max: 3, // Max simultaneous connections from this process
-      idleTimeoutMillis: 10000,
+      max: 1, // Single connection to avoid MaxClientsInSessionMode
+      idleTimeoutMillis: 5000,
       connectionTimeoutMillis: 10000,
     });
   }
