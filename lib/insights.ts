@@ -1,16 +1,6 @@
-import { Client } from "pg";
+import { getPool } from "./db";
 import { EMPRESAS } from "./privacy";
 
-function getClient() {
-  return new Client({
-    host: "aws-1-us-east-2.pooler.supabase.com",
-    port: 5432,
-    database: "postgres",
-    user: "postgres.sfecaatmpqppyoyaqksq",
-    password: process.env.SUPABASE_DB_PASSWORD!,
-    ssl: { rejectUnauthorized: false },
-  });
-}
 
 // --- Types ---
 
@@ -70,10 +60,9 @@ export interface CoocurrenciaRow {
 // --- Queries ---
 
 export async function getDistribucionMontos(): Promise<DistribucionMontosRow[]> {
-  const client = getClient();
+  const pool = getPool();
   try {
-    await client.connect();
-    const { rows } = await client.query(`
+    const { rows } = await pool.query(`
       SELECT cuit, razon_social,
         total_adjudicado / cantidad_contratos AS promedio,
         cantidad_contratos, total_adjudicado
@@ -90,16 +79,13 @@ export async function getDistribucionMontos(): Promise<DistribucionMontosRow[]> 
     }));
   } catch {
     return [];
-  } finally {
-    await client.end();
   }
 }
 
 export async function getRatioContratosDias(): Promise<RatioContratosDiasRow[]> {
-  const client = getClient();
+  const pool = getPool();
   try {
-    await client.connect();
-    const { rows } = await client.query(`
+    const { rows } = await pool.query(`
       SELECT
         a.cuit_proveedor AS cuit,
         MAX(p.razon_social) AS nombre,
@@ -130,16 +116,13 @@ export async function getRatioContratosDias(): Promise<RatioContratosDiasRow[]> 
     }));
   } catch {
     return [];
-  } finally {
-    await client.end();
   }
 }
 
 export async function getBoxPlotProcedimiento(): Promise<BoxPlotRow[]> {
-  const client = getClient();
+  const pool = getPool();
   try {
-    await client.connect();
-    const { rows } = await client.query(`
+    const { rows } = await pool.query(`
       WITH normalized AS (
         SELECT
           CASE
@@ -189,16 +172,13 @@ export async function getBoxPlotProcedimiento(): Promise<BoxPlotRow[]> {
     });
   } catch {
     return [];
-  } finally {
-    await client.end();
   }
 }
 
 export async function getAntesVsDespuesDonacion(): Promise<AntesVsDespuesRow[]> {
-  const client = getClient();
+  const pool = getPool();
   try {
-    await client.connect();
-    const { rows } = await client.query(`
+    const { rows } = await pool.query(`
       WITH first_donation AS (
         SELECT cuit_donante, MIN(fecha_aporte) AS primera_donacion,
           MAX(nombre_donante) AS nombre,
@@ -244,16 +224,13 @@ export async function getAntesVsDespuesDonacion(): Promise<AntesVsDespuesRow[]> 
     }));
   } catch {
     return [];
-  } finally {
-    await client.end();
   }
 }
 
 export async function getHeatmapProveedorOrganismo(): Promise<HeatmapRow[]> {
-  const client = getClient();
+  const pool = getPool();
   try {
-    await client.connect();
-    const { rows } = await client.query(`
+    const { rows } = await pool.query(`
       WITH top_provs AS (
         SELECT cuit, razon_social
         FROM proveedores
@@ -277,16 +254,13 @@ export async function getHeatmapProveedorOrganismo(): Promise<HeatmapRow[]> {
     }));
   } catch {
     return [];
-  } finally {
-    await client.end();
   }
 }
 
 export async function getTimelineAcumulacion(): Promise<TimelineAcumulacionRow[]> {
-  const client = getClient();
+  const pool = getPool();
   try {
-    await client.connect();
-    const { rows } = await client.query(`
+    const { rows } = await pool.query(`
       WITH top5 AS (
         SELECT cuit, razon_social
         FROM proveedores
@@ -334,16 +308,13 @@ export async function getTimelineAcumulacion(): Promise<TimelineAcumulacionRow[]
     }));
   } catch {
     return [];
-  } finally {
-    await client.end();
   }
 }
 
 export async function getCoocurrencia(): Promise<CoocurrenciaRow[]> {
-  const client = getClient();
+  const pool = getPool();
   try {
-    await client.connect();
-    const { rows } = await client.query(`
+    const { rows } = await pool.query(`
       WITH prov_org_month AS (
         SELECT DISTINCT
           cuit_proveedor,
@@ -385,7 +356,5 @@ export async function getCoocurrencia(): Promise<CoocurrenciaRow[]> {
     }));
   } catch {
     return [];
-  } finally {
-    await client.end();
   }
 }

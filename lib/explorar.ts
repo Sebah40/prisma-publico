@@ -3,18 +3,9 @@
  * Cada función recibe filtros y devuelve datos detallados.
  */
 
-import { Client } from "pg";
+import { getPool } from "./db";
 import { EMPRESAS } from "./privacy";
 
-function getClient() {
-  return new Client({
-    host: "aws-1-us-east-2.pooler.supabase.com",
-    port: 5432, database: "postgres",
-    user: "postgres.sfecaatmpqppyoyaqksq",
-    password: process.env.SUPABASE_DB_PASSWORD!,
-    ssl: { rejectUnauthorized: false },
-  });
-}
 
 export interface ProveedorEnRango {
   cuit: string;
@@ -52,10 +43,9 @@ export interface CruceDetalle {
 export async function getProveedoresEnRango(
   minMonto: number, maxMonto: number, limit = 50
 ): Promise<ProveedorEnRango[]> {
-  const client = getClient();
-  try {
-    await client.connect();
-    const { rows } = await client.query(`
+  const pool = getPool();
+
+    const { rows } = await pool.query(`
       SELECT cuit, razon_social,
         total_adjudicado / NULLIF(cantidad_contratos, 0) as monto_promedio,
         total_adjudicado, cantidad_contratos, jurisdicciones_distintas
@@ -67,17 +57,15 @@ export async function getProveedoresEnRango(
       LIMIT $3
     `, [minMonto, maxMonto, limit]);
     return rows as ProveedorEnRango[];
-  } finally { await client.end(); }
 }
 
 /** Contratos de un tipo de procedimiento */
 export async function getContratosPorProcedimiento(
   tipo: string, limit = 100
 ): Promise<ContratoDetalle[]> {
-  const client = getClient();
-  try {
-    await client.connect();
-    const { rows } = await client.query(`
+  const pool = getPool();
+
+    const { rows } = await pool.query(`
       SELECT numero_procedimiento, saf_desc, tipo_procedimiento,
         ejercicio, fecha_adjudicacion, cuit_proveedor, proveedor_desc,
         monto, monto_ajustado
@@ -87,23 +75,21 @@ export async function getContratosPorProcedimiento(
       LIMIT $2
     `, [`%${tipo}%`, limit]);
     return rows as ContratoDetalle[];
-  } finally { await client.end(); }
 }
 
 /** Detalle del cruce proveedor×organismo */
 export async function getCruceProveedorOrganismo(
   cuit?: string, organismo?: string, limit = 50
 ): Promise<CruceDetalle[]> {
-  const client = getClient();
-  try {
-    await client.connect();
+  const pool = getPool();
+
     let where = `WHERE ${EMPRESAS.proveedor}`;
     const params: (string | number)[] = [];
     if (cuit) { params.push(cuit); where += ` AND cuit_proveedor = $${params.length}`; }
     if (organismo) { params.push(`%${organismo}%`); where += ` AND saf_desc ILIKE $${params.length}`; }
     params.push(limit);
 
-    const { rows } = await client.query(`
+    const { rows } = await pool.query(`
       SELECT proveedor_desc as proveedor, cuit_proveedor as cuit, saf_desc as organismo,
         COUNT(*) as contratos, SUM(monto_ajustado) as monto_total,
         MIN(fecha_adjudicacion::text) as primer_contrato,
@@ -116,17 +102,15 @@ export async function getCruceProveedorOrganismo(
       LIMIT $${params.length}
     `, params);
     return rows as CruceDetalle[];
-  } finally { await client.end(); }
 }
 
 /** Contratos de un mes específico */
 export async function getContratosPorMes(
   mes: string, limit = 100
 ): Promise<ContratoDetalle[]> {
-  const client = getClient();
-  try {
-    await client.connect();
-    const { rows } = await client.query(`
+  const pool = getPool();
+
+    const { rows } = await pool.query(`
       SELECT numero_procedimiento, saf_desc, tipo_procedimiento,
         ejercicio, fecha_adjudicacion, cuit_proveedor, proveedor_desc,
         monto, monto_ajustado
@@ -136,17 +120,15 @@ export async function getContratosPorMes(
       LIMIT $2
     `, [mes, limit]);
     return rows as ContratoDetalle[];
-  } finally { await client.end(); }
 }
 
 /** Co-ocurrencia: detalle de dos proveedores que comparten organismos */
 export async function getCoocurrenciaDetalle(
   cuit1: string, cuit2: string
 ): Promise<{ organismo: string; meses: string[]; monto1: number; monto2: number }[]> {
-  const client = getClient();
-  try {
-    await client.connect();
-    const { rows } = await client.query(`
+  const pool = getPool();
+
+    const { rows } = await pool.query(`
       WITH a1 AS (
         SELECT saf_desc, to_char(COALESCE(fecha_adjudicacion, (ejercicio::text || '-06-01')::date), 'YYYY-MM') as mes, SUM(monto_ajustado) as monto
         FROM adjudicaciones_historicas WHERE cuit_proveedor = $1 AND moneda = 'ARS'
@@ -165,5 +147,4 @@ export async function getCoocurrenciaDetalle(
       ORDER BY SUM(a1.monto) + SUM(a2.monto) DESC
     `, [cuit1, cuit2]);
     return rows as { organismo: string; meses: string[]; monto1: number; monto2: number }[];
-  } finally { await client.end(); }
 }

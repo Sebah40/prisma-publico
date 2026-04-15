@@ -7,6 +7,7 @@
 
 import { getSupabase, isSupabaseConfigured } from "./supabase";
 import { adjustForInflation, toYearMonth } from "./inflation";
+import { getPool } from "./db";
 
 // --- Types ---
 
@@ -155,21 +156,9 @@ export async function getCoincidencias(
 ): Promise<CoincidenciaFinanciamiento[]> {
   if (!isSupabaseConfigured()) return [];
 
-  // Use pg directly for the complex join
-  const { Client } = await import("pg");
-  const client = new Client({
-    host: "aws-1-us-east-2.pooler.supabase.com",
-    port: 5432,
-    database: "postgres",
-    user: "postgres.sfecaatmpqppyoyaqksq",
-    password: process.env.SUPABASE_DB_PASSWORD!,
-    ssl: { rejectUnauthorized: false },
-  });
+  const pool = getPool();
 
-  try {
-    await client.connect();
-
-    const { rows } = await client.query(`
+    const { rows } = await pool.query(`
       SELECT
         a.cuit_donante as cuit,
         MAX(a.nombre_donante) as razon_social,
@@ -204,7 +193,4 @@ export async function getCoincidencias(
       partidos: (r.partidos as string[]) || [],
       jurisdicciones: Number(r.jurisdicciones_distintas),
     }));
-  } finally {
-    await client.end();
-  }
 }

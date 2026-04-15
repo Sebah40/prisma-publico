@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getUltimoSnapshot, agregarPorJurisdiccion, enriquecerProgramas } from "@/lib/queries";
 import { formatARSCompact, formatPesos } from "@/lib/format";
 import { InfoTip } from "@/components/ui/tooltip";
-import { Client } from "pg";
+import { getPool } from "@/lib/db";
 import { EMPRESAS } from "@/lib/privacy";
 import {
   getDistribucionMontos,
@@ -18,26 +18,19 @@ import { InsightsSection } from "@/components/insights/insights-section";
 export const dynamic = "force-dynamic";
 
 async function getStats() {
-  const client = new Client({
-    host: "aws-1-us-east-2.pooler.supabase.com", port: 5432, database: "postgres",
-    user: "postgres.sfecaatmpqppyoyaqksq",
-    password: process.env.SUPABASE_DB_PASSWORD!,
-    ssl: { rejectUnauthorized: false },
-  });
-  try {
-    await client.connect();
+  const pool = getPool();
 
-    const { rows: [adj] } = await client.query("SELECT COUNT(*) as n, COUNT(DISTINCT cuit_proveedor) as provs FROM adjudicaciones_historicas");
-    const { rows: [ap] } = await client.query("SELECT COUNT(*) as n, COUNT(DISTINCT cuit_donante) as donors FROM aportes_campania");
-    const { rows: [cruce] } = await client.query(`
+  const { rows: [adj] } = await pool.query("SELECT COUNT(*) as n, COUNT(DISTINCT cuit_proveedor) as provs FROM adjudicaciones_historicas");
+    const { rows: [ap] } = await pool.query("SELECT COUNT(*) as n, COUNT(DISTINCT cuit_donante) as donors FROM aportes_campania");
+    const { rows: [cruce] } = await pool.query(`
       SELECT COUNT(DISTINCT a.cuit_donante) as n
       FROM aportes_campania a JOIN proveedores p ON a.cuit_donante = p.cuit AND p.cantidad_contratos > 0
     `);
-    const { rows: top5 } = await client.query(`
+    const { rows: top5 } = await pool.query(`
       SELECT cuit, razon_social, total_adjudicado, cantidad_contratos, jurisdicciones_distintas
       FROM proveedores WHERE cantidad_contratos > 0 AND ${EMPRESAS.cuit} ORDER BY total_adjudicado_ajustado DESC LIMIT 5
     `);
-    const { rows: top5donantes } = await client.query(`
+    const { rows: top5donantes } = await pool.query(`
       SELECT a.cuit_donante, MAX(a.nombre_donante) as nombre,
         array_agg(DISTINCT a.partido_politico) as partidos,
         SUM(a.monto_aporte) as aportado, p.total_adjudicado as adjudicado
@@ -45,7 +38,7 @@ async function getStats() {
       WHERE ${EMPRESAS.donante}
       GROUP BY a.cuit_donante, p.total_adjudicado ORDER BY p.total_adjudicado DESC LIMIT 5
     `);
-    const { rows: directa } = await client.query(`
+    const { rows: directa } = await pool.query(`
       SELECT tipo_procedimiento, COUNT(*) as n FROM adjudicaciones_historicas
       WHERE tipo_procedimiento IS NOT NULL GROUP BY tipo_procedimiento ORDER BY n DESC
     `);
@@ -70,9 +63,6 @@ async function getStats() {
         tipo: String(r.tipo_procedimiento), count: Number(r.n),
       })),
     };
-  } finally {
-    await client.end();
-  }
 }
 
 export default async function HomePage() {

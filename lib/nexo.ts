@@ -3,19 +3,9 @@
  * Todo en pesos ajustados (Feb 2026).
  */
 
-import { Client } from "pg";
+import { getPool } from "./db";
 import { EMPRESAS } from "./privacy";
 
-function getClient() {
-  return new Client({
-    host: "aws-1-us-east-2.pooler.supabase.com",
-    port: 5432,
-    database: "postgres",
-    user: "postgres.sfecaatmpqppyoyaqksq",
-    password: process.env.SUPABASE_DB_PASSWORD!,
-    ssl: { rejectUnauthorized: false },
-  });
-}
 
 // --- Types ---
 
@@ -63,10 +53,9 @@ export interface NexoKPIs {
 // --- Queries ---
 
 export async function getNexoPoints(): Promise<NexoPoint[]> {
-  const client = getClient();
-  try {
-    await client.connect();
-    const { rows } = await client.query(`
+  const pool = getPool();
+
+    const { rows } = await pool.query(`
       SELECT
         a.cuit_donante as cuit,
         MAX(a.nombre_donante) as nombre,
@@ -87,7 +76,7 @@ export async function getNexoPoints(): Promise<NexoPoint[]> {
 
     // Get adjusted adjudicado totals
     const cuits = rows.map((r: Record<string, unknown>) => String(r.cuit));
-    const { rows: adjTotals } = await client.query(`
+    const { rows: adjTotals } = await pool.query(`
       SELECT cuit_proveedor, SUM(monto_ajustado) as total_ajustado
       FROM adjudicaciones_historicas
       WHERE cuit_proveedor = ANY($1) AND moneda = 'ARS' AND ${EMPRESAS.proveedor}
@@ -114,23 +103,18 @@ export async function getNexoPoints(): Promise<NexoPoint[]> {
         primer_contrato: Number(r.primer_contrato) || 0,
       };
     });
-  } finally {
-    await client.end();
-  }
 }
 
 export async function getNexoTimeline(cuit: string): Promise<NexoTimeline[]> {
-  const client = getClient();
-  try {
-    await client.connect();
+  const pool = getPool();
 
-    const { rows: aportes } = await client.query(`
+    const { rows: aportes } = await pool.query(`
       SELECT fecha_aporte, monto_aporte, monto_ajustado, partido_politico, eleccion_anio
       FROM aportes_campania WHERE cuit_donante = $1
       ORDER BY fecha_aporte ASC
     `, [cuit]);
 
-    const { rows: contratos } = await client.query(`
+    const { rows: contratos } = await pool.query(`
       SELECT fecha_adjudicacion, monto, monto_ajustado, saf_desc, ejercicio
       FROM adjudicaciones_historicas WHERE cuit_proveedor = $1
       ORDER BY fecha_adjudicacion ASC
@@ -161,16 +145,12 @@ export async function getNexoTimeline(cuit: string): Promise<NexoTimeline[]> {
     }
 
     return timeline.sort((a, b) => a.fecha.localeCompare(b.fecha));
-  } finally {
-    await client.end();
-  }
 }
 
 export async function getNexoJurisdicciones(cuit: string): Promise<NexoJurisdiccion[]> {
-  const client = getClient();
-  try {
-    await client.connect();
-    const { rows } = await client.query(`
+  const pool = getPool();
+
+    const { rows } = await pool.query(`
       SELECT saf_desc, SUM(monto) as monto_total, SUM(monto_ajustado) as monto_ajustado, COUNT(*) as contratos
       FROM adjudicaciones_historicas WHERE cuit_proveedor = $1 AND moneda = 'ARS'
       GROUP BY saf_desc ORDER BY monto_ajustado DESC
@@ -181,17 +161,13 @@ export async function getNexoJurisdicciones(cuit: string): Promise<NexoJurisdicc
       monto_ajustado: Number(r.monto_ajustado),
       contratos: Number(r.contratos),
     }));
-  } finally {
-    await client.end();
-  }
 }
 
 export async function getNexoKPIs(): Promise<NexoKPIs> {
-  const client = getClient();
-  try {
-    await client.connect();
+  const pool = getPool();
+
     // Get aggregates
-    const { rows: cruces } = await client.query(`
+    const { rows: cruces } = await pool.query(`
       SELECT
         a.cuit_donante,
         MAX(a.nombre_donante) as nombre,
@@ -230,7 +206,4 @@ export async function getNexoKPIs(): Promise<NexoKPIs> {
       nodo_mayor_nombre: String(kpi.nodo_nombre || ""),
       nodo_mayor_ratio: Number(kpi.nodo_ratio || 0),
     };
-  } finally {
-    await client.end();
-  }
 }
