@@ -70,6 +70,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="text-[10px] sm:text-[9px] text-text-muted">
               Los datos mostrados son de acceso público (Ley 27.275). La coincidencia entre datos no implica causalidad ni irregularidad.
             </div>
+            <div className="pt-2 border-t border-border text-xs sm:text-[10px] text-text-muted">
+              Hecho por Sebastián Haoys ·{" "}
+              <a href="https://firstcommit.io" target="_blank" rel="noopener noreferrer" className="hover:text-mint py-1">
+                firstcommit.io
+              </a>
+            </div>
           </div>
         </footer>
       </body>
