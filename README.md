@@ -2,7 +2,7 @@
 
 Plataforma de seguimiento del gasto público argentino. Cruza datos de presupuesto nacional, contrataciones del Estado y aportes de campaña para mostrar dónde va el dinero público y quiénes son sus beneficiarios.
 
-Despliegue: https://prisma-publico.vercel.app
+Despliegue: https://prismapublico.firstcommit.io
 
 ## Stack
 
