@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Masthead */}
         <header className="border-b border-border">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
-            <Link href="/" className="no-underline hover:no-underline">
+            <Link href="/" translate="no" className="no-underline hover:no-underline notranslate">
               <span className="text-2xl sm:text-3xl font-black tracking-tight text-white">
                 PRISMA
               </span>
@@ -71,8 +71,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               Los datos mostrados son de acceso público (Ley 27.275). La coincidencia entre datos no implica causalidad ni irregularidad.
             </div>
             <div className="pt-2 border-t border-border text-xs sm:text-[10px] text-text-muted">
-              Hecho por Sebastián Haoys ·{" "}
-              <a href="https://firstcommit.io" target="_blank" rel="noopener noreferrer" className="hover:text-mint py-1">
+              Hecho por <span translate="no" className="notranslate">Sebastián Haoys</span> ·{" "}
+              <a href="https://firstcommit.io" target="_blank" rel="noopener noreferrer" translate="no" className="hover:text-mint py-1 notranslate">
                 firstcommit.io
               </a>
             </div>

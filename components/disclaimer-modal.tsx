@@ -38,7 +38,7 @@ export function DisclaimerModal() {
           <p className="text-sm text-text-secondary leading-relaxed mb-5">
             Si te interesa ver cómo fue construido paso a paso con IA,
             el proceso completo está publicado en{" "}
-            <a href="https://firstcommit.io" target="_blank" rel="noopener noreferrer" className="text-mint underline">
+            <a href="https://firstcommit.io" target="_blank" rel="noopener noreferrer" translate="no" className="text-mint underline notranslate">
               firstcommit.io
             </a>.
           </p>
@@ -47,9 +47,10 @@ export function DisclaimerModal() {
               href="https://firstcommit.io"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 border border-mint px-4 py-3 sm:py-2.5 font-data text-[12px] uppercase tracking-widest text-mint text-center no-underline hover:bg-mint hover:text-canvas hover:no-underline transition-colors"
+              translate="no"
+              className="flex-1 border border-mint px-4 py-3 sm:py-2.5 font-data text-[12px] uppercase tracking-widest text-mint text-center no-underline hover:bg-mint hover:text-canvas hover:no-underline transition-colors notranslate"
             >
-              Ver en First Commit →
+              Ver en <span translate="no" className="notranslate">First Commit</span> →
             </a>
             <button
               onClick={closeAuthor}
