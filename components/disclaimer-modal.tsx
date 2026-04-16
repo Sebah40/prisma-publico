@@ -4,18 +4,64 @@ import { useState, useEffect } from "react";
 
 export function DisclaimerModal() {
   const [open, setOpen] = useState(false);
+  const [authorOpen, setAuthorOpen] = useState(false);
 
   useEffect(() => {
     const accepted = sessionStorage.getItem("prisma-disclaimer-accepted");
+    const authorSeen = sessionStorage.getItem("prisma-author-seen");
     if (!accepted) setOpen(true);
+    else if (!authorSeen) setAuthorOpen(true);
   }, []);
 
   function accept() {
     sessionStorage.setItem("prisma-disclaimer-accepted", "1");
     setOpen(false);
+    if (!sessionStorage.getItem("prisma-author-seen")) setAuthorOpen(true);
   }
 
-  if (!open) return null;
+  function closeAuthor() {
+    sessionStorage.setItem("prisma-author-seen", "1");
+    setAuthorOpen(false);
+  }
+
+  if (!open && !authorOpen) return null;
+
+  if (authorOpen && !open) {
+    return (
+      <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center bg-black/80">
+        <div className="flex flex-col w-full sm:h-auto sm:max-w-md sm:mx-4 sm:border sm:border-border bg-canvas p-5 sm:p-6">
+          <h2 className="text-lg font-bold text-white mb-3">Hecho por Sebastián Haoys</h2>
+          <p className="text-sm text-text-secondary leading-relaxed mb-4">
+            Desarrollador full-stack argentino. Este proyecto es una herramienta abierta
+            para visibilizar datos públicos del Estado.
+          </p>
+          <p className="text-sm text-text-secondary leading-relaxed mb-5">
+            Si te interesa ver cómo fue construido paso a paso con IA,
+            el proceso completo está publicado en{" "}
+            <a href="https://firstcommit.io" target="_blank" rel="noopener noreferrer" className="text-mint underline">
+              firstcommit.io
+            </a>.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <a
+              href="https://firstcommit.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 border border-mint px-4 py-3 sm:py-2.5 font-data text-[12px] uppercase tracking-widest text-mint text-center no-underline hover:bg-mint hover:text-canvas hover:no-underline transition-colors"
+            >
+              Ver en First Commit →
+            </a>
+            <button
+              onClick={closeAuthor}
+              className="flex-1 border border-border px-4 py-3 sm:py-2.5 font-data text-[12px] uppercase tracking-widest text-text-secondary hover:border-mint hover:text-mint transition-colors"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center bg-black/80">
